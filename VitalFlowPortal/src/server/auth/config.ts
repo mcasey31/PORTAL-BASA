@@ -53,66 +53,87 @@ export const authConfig = {
             if (!credentials?.dni || !credentials?.password) return null;
 
             try {
-              const dni = credentials.dni as string;
-              const password = credentials.password as string;
+              const dni = String(credentials.dni).trim();
+              const password = String(credentials.password).trim();
               const email = `dni-${dni}@pacientes.local`;
               const username = `paciente-${dni}`;
 
-              const hisPatientId = await getHisPatientIdByDni(dni);
-              if (!hisPatientId) {
-                console.warn(`[DNI Auth] DNI ${dni} does not exist in HIS. Login rejected.`);
-                return null;
+              let user = await db.user.findUnique({ where: { email } });
+              if (!user) {
+                user = await db.user.findUnique({ where: { username } });
               }
 
-              const existingUser = await db.user.findUnique({ where: { email } });
-              if (existingUser && existingUser.password !== password) {
+              if (user && user.password !== password) {
                 console.warn(`[DNI Auth] Invalid password for DNI ${dni}`);
                 return null;
               }
 
-              // 1. Find or create User
-              const user = existingUser
-                ? existingUser
-                : await db.user.create({
-                    data: {
-                      email,
-                      name: `Paciente ${dni}`,
-                      role: "PATIENT",
-                      username,
-                      password,
-                    },
-                  });
+              let hisPatientId: string | null = null;
+              try {
+                hisPatientId = await getHisPatientIdByDni(dni);
+              } catch (error) {
+                console.warn(`[DNI Auth] HIS lookup failed for DNI ${dni}; falling back to local user validation.`, error);
+              }
+
+              if (!user) {
+                if (!hisPatientId) {
+                  console.warn(`[DNI Auth] DNI ${dni} does not exist in HIS and no local user match was found. Login rejected.`);
+                  return null;
+                }
+
+                user = await db.user.create({
+                  data: {
+                    email,
+                    name: `Paciente ${dni}`,
+                    role: "PATIENT",
+                    username,
+                    password,
+                  },
+                });
+              }
+
               console.log(`[DNI Auth] User: ${user.id} (${email})`);
 
-              // 2. Find or create Patient linked to HIS
-              let patient = await db.patient.findUnique({
-                where: { userId: user.id }
-              });
+              if (hisPatientId) {
+                let patient = await db.patient.findUnique({ where: { userId: user.id } });
 
-              if (!patient) {
-                patient = await db.patient.create({
-                  data: {
-                    userId: user.id,
-                    hisId: hisPatientId,
-                    dni,
-                    onboardingCompleted: true
-                  }
-                });
-                console.log(`[DNI Auth] Created patient for user ${user.id} linked to HIS ${hisPatientId}`);
-              } else {
-                const shouldUpdate = patient.dni !== dni || patient.hisId !== hisPatientId || !patient.onboardingCompleted;
-                if (shouldUpdate) {
-                  patient = await db.patient.update({
-                    where: { userId: user.id },
+                if (!patient) {
+                  patient = await db.patient.create({
                     data: {
-                      dni,
+                      userId: user.id,
                       hisId: hisPatientId,
+                      dni,
                       onboardingCompleted: true,
                     },
                   });
-                  console.log(`[DNI Auth] Updated patient mapping for user ${user.id} -> HIS ${hisPatientId}`);
+                  console.log(`[DNI Auth] Created patient for user ${user.id} linked to HIS ${hisPatientId}`);
                 } else {
-                  console.log(`[DNI Auth] Patient already exists for user ${user.id}`);
+                  const shouldUpdate = patient.dni !== dni || patient.hisId !== hisPatientId || !patient.onboardingCompleted;
+                  if (shouldUpdate) {
+                    patient = await db.patient.update({
+                      where: { userId: user.id },
+                      data: {
+                        dni,
+                        hisId: hisPatientId,
+                        onboardingCompleted: true,
+                      },
+                    });
+                    console.log(`[DNI Auth] Updated patient mapping for user ${user.id} -> HIS ${hisPatientId}`);
+                  } else {
+                    console.log(`[DNI Auth] Patient already exists for user ${user.id}`);
+                  }
+                }
+              } else {
+                let patient = await db.patient.findUnique({ where: { userId: user.id } });
+                if (!patient) {
+                  patient = await db.patient.create({
+                    data: {
+                      userId: user.id,
+                      dni,
+                      onboardingCompleted: true,
+                    },
+                  });
+                  console.log(`[DNI Auth] Created patient fallback record for local user ${user.id}`);
                 }
               }
 
@@ -120,7 +141,7 @@ export const authConfig = {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                image: `https://i.pravatar.cc/150?u=${dni}`
+                image: `https://i.pravatar.cc/150?u=${dni}`,
               };
             } catch (e) {
               console.error("[DNI Auth] Error:", e);

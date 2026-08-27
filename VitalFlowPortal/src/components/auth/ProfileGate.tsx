@@ -56,12 +56,16 @@ export function ProfileGate({ children }: { children: React.ReactNode }) {
     // y la sesión o los datos están cargando.
     if (!isExcludedRoute && (status === "loading" || (status === "authenticated" && isLoading))) {
         return (
-            <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 gap-6">
-                <div className="h-16 w-16 bg-slate-900 rounded-2xl flex items-center justify-center shadow-2xl shadow-slate-900/10 animate-pulse">
-                    <HeartPulse className="h-10 w-10 text-white" />
+            <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 gap-5">
+                <div className="flex items-center justify-center rounded-full border border-blue-100 bg-white px-3 py-2 shadow-sm shadow-blue-100/80">
+                    <img
+                        src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
+                        alt="RED BASA"
+                        className="h-8 w-auto object-contain"
+                    />
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="h-6 w-6 text-slate-400 animate-spin" />
+                    <Loader2 className="h-5 w-5 text-slate-400 animate-spin" />
                     <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">Autenticando Acceso</p>
                 </div>
             </div>

@@ -1,0 +1,44 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="700" y1="0" x2="700" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D9EEF7"/>
+      <stop offset="1" stop-color="#F5EEE4"/>
+    </linearGradient>
+    <linearGradient id="facade" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#F7F7F5"/>
+      <stop offset="1" stop-color="#E5E0D7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1400" height="900" fill="url(#bg)"/>
+  <rect x="60" y="130" width="1280" height="620" fill="url(#facade)"/>
+  <path d="M140 730H1260V780H140V730Z" fill="#C4C0B6"/>
+  <path d="M240 190H1160V640H240V190Z" fill="#F3F0EA"/>
+  <g opacity="0.82">
+    <rect x="320" y="230" width="120" height="180" fill="#E9E4DC"/>
+    <rect x="470" y="230" width="120" height="180" fill="#E9E4DC"/>
+    <rect x="620" y="230" width="120" height="180" fill="#E9E4DC"/>
+    <rect x="770" y="230" width="120" height="180" fill="#E9E4DC"/>
+    <rect x="920" y="230" width="120" height="180" fill="#E9E4DC"/>
+    <rect x="320" y="430" width="120" height="150" fill="#E9E4DC"/>
+    <rect x="470" y="430" width="120" height="150" fill="#E9E4DC"/>
+    <rect x="620" y="430" width="120" height="150" fill="#E9E4DC"/>
+    <rect x="770" y="430" width="120" height="150" fill="#E9E4DC"/>
+    <rect x="920" y="430" width="120" height="150" fill="#E9E4DC"/>
+  </g>
+  <g>
+    <path d="M540 220H860V350H540V220Z" fill="#E4DED3"/>
+    <path d="M570 220H830V350H570V220Z" fill="#D8D4CC"/>
+    <text x="700" y="305" text-anchor="middle" font-family="Georgia, serif" font-size="52" font-weight="700" fill="#4E4A47">SANATORIO</text>
+  </g>
+  <rect x="520" y="560" width="360" height="110" fill="#4A6E7A"/>
+  <rect x="560" y="575" width="280" height="80" fill="#D5E7EE"/>
+  <path d="M700 560V680" stroke="#D5C7AE" stroke-width="9"/>
+  <g fill="#7A8B7C">
+    <circle cx="180" cy="650" r="62"/>
+    <circle cx="1230" cy="650" r="72"/>
+  </g>
+  <g fill="#A3B890">
+    <path d="M135 690C170 632 200 610 232 610C250 610 266 618 280 634C254 660 214 680 160 690H135Z"/>
+    <path d="M1190 690C1237 632 1262 610 1298 610C1320 610 1338 621 1355 637C1323 658 1285 677 1230 690H1190Z"/>
+  </g>
+</svg>

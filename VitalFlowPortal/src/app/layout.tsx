@@ -8,8 +8,8 @@ import { AuthProvider } from "~/components/providers/AuthProvider";
 import { ProfileGate } from "~/components/auth/ProfileGate";
 
 export const metadata: Metadata = {
-  title: "VitalPlus Health | Plataforma de Gestión de Salud",
-  description: "Ecosistema integral de salud digital.",
+  title: "RED BASA: Portal de Pacientes",
+  description: "Portal de pacientes de RED BASA.",
   icons: [
     { rel: "icon", url: "/favicon.ico" },
     { rel: "apple-touch-icon", url: "/icons/apple-touch-icon.png" }

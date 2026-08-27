@@ -9,9 +9,9 @@ function BasaBrandMark() {
   return (
     <div className="flex justify-center">
       <img
-        src="https://redbasa.com.ar/wp-content/uploads/2019/12/logo-redbasa-color-260x78.png"
+        src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
         alt="RED BASA"
-        className="h-auto w-[220px] max-w-full object-contain sm:w-[240px]"
+        className="h-10 w-auto max-w-full object-contain sm:h-12"
       />
     </div>
   );
@@ -114,7 +114,7 @@ export default function PatientSignInPage() {
                 className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-black text-sm uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {loading ? "Ingresando..." : "Ingresar con DNI"}
+                {loading ? "Ingresando..." : "INGRESAR"}
               </button>
 
               <div className="pt-2 space-y-2 text-center">

@@ -38,9 +38,9 @@ function BasaBrandMark() {
   return (
     <div className="mx-auto mb-6 flex w-full justify-center">
       <img
-        src="https://redbasa.com.ar/wp-content/uploads/2019/12/logo-redbasa-color-260x78.png"
+        src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
         alt="RED BASA"
-        className="h-auto w-[220px] max-w-full object-contain sm:w-[240px]"
+        className="h-10 w-auto max-w-full object-contain sm:h-12"
       />
     </div>
   );

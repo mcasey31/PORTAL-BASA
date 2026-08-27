@@ -36,16 +36,12 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
     <aside className="w-72 h-full border-r border-slate-100 bg-white flex flex-col shrink-0 z-20 shadow-2xl lg:shadow-none">
       <div className="p-6 lg:p-10 flex-1">
         <div className="flex items-center justify-between mb-8 lg:mb-14">
-          <div className="flex items-center gap-4 px-2">
-            <div className="h-12 w-12 luxury-gradient rounded-[1.2rem] flex items-center justify-center shadow-xl shadow-blue-500/20 rotate-3">
-              <HeartPulse className="h-7 w-7 text-white -rotate-3" />
-            </div>
-            <div className="flex flex-col">
-               <span className="text-xl font-black tracking-tight text-slate-900 uppercase">
-                 {PLATFORM_CONFIG.institutionName.split(' ')[1] || 'QUANTUM'}<span className="text-blue-600">.</span>
-               </span>
-               <span className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400 -mt-1">Experience</span>
-            </div>
+          <div className="flex items-center gap-3 px-2">
+            <img
+              src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
+              alt="RED BASA"
+              className="h-8 w-auto object-contain"
+            />
           </div>
 
           {/* Botón de cerrar solo en mobile */}

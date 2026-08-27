@@ -1,0 +1,43 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="700" y1="0" x2="700" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E6F2F7"/>
+      <stop offset="1" stop-color="#F8F1E8"/>
+    </linearGradient>
+    <linearGradient id="facade" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#F7F7F3"/>
+      <stop offset="1" stop-color="#E4DED3"/>
+    </linearGradient>
+  </defs>
+  <rect width="1400" height="900" fill="url(#bg)"/>
+  <rect x="90" y="150" width="1220" height="600" fill="url(#facade)"/>
+  <path d="M150 730H1250V780H150V730Z" fill="#CAC0B4"/>
+  <path d="M260 200H1140V640H260V200Z" fill="#F1EEE8"/>
+  <g opacity="0.8">
+    <rect x="330" y="230" width="130" height="170" fill="#E8E4DC"/>
+    <rect x="500" y="230" width="130" height="170" fill="#E8E4DC"/>
+    <rect x="670" y="230" width="130" height="170" fill="#E8E4DC"/>
+    <rect x="840" y="230" width="130" height="170" fill="#E8E4DC"/>
+    <rect x="1010" y="230" width="130" height="170" fill="#E8E4DC"/>
+    <rect x="330" y="430" width="130" height="150" fill="#E8E4DC"/>
+    <rect x="500" y="430" width="130" height="150" fill="#E8E4DC"/>
+    <rect x="670" y="430" width="130" height="150" fill="#E8E4DC"/>
+    <rect x="840" y="430" width="130" height="150" fill="#E8E4DC"/>
+    <rect x="1010" y="430" width="130" height="150" fill="#E8E4DC"/>
+  </g>
+  <g>
+    <rect x="500" y="210" width="400" height="120" fill="#E3DED3"/>
+    <text x="700" y="290" text-anchor="middle" font-family="Georgia, serif" font-size="44" font-weight="700" fill="#463A38">POLICLÍNICO</text>
+  </g>
+  <path d="M560 565H840V680H560V565Z" fill="#4A73A7"/>
+  <rect x="585" y="585" width="295" height="80" fill="#DCEAF5"/>
+  <path d="M700 565V680" stroke="#D0C0A5" stroke-width="7"/>
+  <g fill="#7B8F7A">
+    <circle cx="220" cy="690" r="72"/>
+    <circle cx="1170" cy="695" r="64"/>
+  </g>
+  <g fill="#A3B9A0">
+    <path d="M170 690C205 635 230 614 259 614C278 614 294 622 308 638C281 662 248 680 196 690H170Z"/>
+    <path d="M1130 690C1170 632 1198 615 1232 615C1252 615 1272 624 1288 640C1252 664 1218 680 1172 690H1130Z"/>
+  </g>
+</svg>

@@ -62,15 +62,12 @@ export default function PortalLayout({
                   {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                 </button>
 
-                <div className="flex flex-col">
-                    <h1 className="text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] lg:tracking-[0.4em] mb-0.5 lg:mb-1">
-                        {PLATFORM_CONFIG.institutionName}
-                    </h1>
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] lg:text-xs font-bold text-slate-900 font-serif italic">Access</span>
-                        <div className="h-1 w-1 rounded-full bg-slate-300"></div>
-                        <span className="text-[8px] lg:text-[10px] font-black text-blue-600 uppercase tracking-widest">v1.2.4</span>
-                    </div>
+                <div className="flex items-center gap-3">
+                    <img
+                        src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
+                        alt="RED BASA"
+                        className="h-7 w-auto object-contain"
+                    />
                 </div>
                 
                 <div className="hidden lg:flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-50 border border-slate-100 focus-within:bg-white focus-within:border-blue-200 transition-all duration-500 group">

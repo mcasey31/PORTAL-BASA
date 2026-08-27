@@ -22,6 +22,42 @@ import { api } from "~/trpc/react";
 import { useSession } from "next-auth/react";
 import { PLATFORM_CONFIG } from "~/config/platform";
 
+const BASA_CENTERS = [
+  {
+    id: "centro-gallego",
+    name: "Centro Gallego",
+    type: "CABA",
+    address: "Av. Belgrano 2199, CABA",
+    phone: "0810 122-2424",
+    image: "/images/CENTROS PICS/centro-gallego.png",
+    link: "https://centrogallego.ar/",
+    guardTime: "15 min",
+    status: "normal",
+  },
+  {
+    id: "sanatorio-san-jose",
+    name: "Sanatorio San José",
+    type: "CABA",
+    address: "Sánchez de Bustamante 1674",
+    phone: "0810 122-2424",
+    image: "/images/CENTROS PICS/sanatorio-san-jose.png",
+    link: "https://redbasa.com.ar/sanatorio-san-jose/",
+    guardTime: "20 min",
+    status: "busy",
+  },
+  {
+    id: "policlinico-avellaneda",
+    name: "Policlínico Avellaneda",
+    type: "Buenos Aires",
+    address: "Av. Pres. Hipólito Yrigoyen 670, Avellaneda",
+    phone: "0810 122-2424",
+    image: "/images/CENTROS PICS/avellaneda.png",
+    link: "https://redbasa.com.ar/policlinico-regional-avellaneda/",
+    guardTime: "25 min",
+    status: "normal",
+  },
+];
+
 export default function DashboardPage() {
   const { data: session } = useSession();
   const { data: patient } = api.patient.getOnboardingStatus.useQuery();
@@ -61,7 +97,14 @@ export default function DashboardPage() {
              <MapPin className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
              <h2 className="text-lg md:text-2xl font-bold text-slate-900 tracking-tight uppercase">Mis Centros Frecuentes</h2>
           </div>
-          <Link href="/map" className="text-[10px] font-black text-slate-400 hover:text-slate-900 tracking-[0.2em] transition-colors">VER TODAS LAS SEDES</Link>
+          <a
+            href="https://redbasa.com.ar/centros-de-salud/"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[10px] font-black text-slate-400 hover:text-slate-900 tracking-[0.2em] transition-colors"
+          >
+            VER TODAS LAS SEDES
+          </a>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -70,9 +113,8 @@ export default function DashboardPage() {
               <CenterDashboardCard key={center.id} center={center} isFrequent={true} />
             ))
           ) : (
-            // Fallback: Mostrar centros recomendados si no hay frecuentes
-            PLATFORM_CONFIG.centers.slice(0, 3).map((center) => (
-              <CenterDashboardCard key={center.id} center={center} isFrequent={false} />
+            BASA_CENTERS.map((center) => (
+              <CenterDashboardCard key={center.id} center={center} isFrequent={true} />
             ))
           )}
         </div>
@@ -142,49 +184,44 @@ export default function DashboardPage() {
 
 function CenterDashboardCard({ center, isFrequent }: { center: any, isFrequent: boolean }) {
   return (
-    <div className="soft-card overflow-hidden group flex flex-col relative">
+    <div className="soft-card overflow-hidden group flex flex-col relative rounded-[28px] border border-slate-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
        {isFrequent && (
          <div className="absolute top-4 right-4 z-20">
-            <div className="bg-blue-600 text-white text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest shadow-lg flex items-center gap-1">
-               <Plus className="w-2 h-2" />
+            <div className="bg-blue-600 text-white text-[10px] sm:text-[11px] font-black px-4 py-2 rounded-full uppercase tracking-[0.15em] shadow-lg flex items-center gap-2">
+               <Plus className="w-3 h-3" />
                Frecuente
             </div>
          </div>
        )}
-       <div className="h-40 overflow-hidden relative">
+       <div className="h-56 overflow-hidden relative">
           <img 
             src={center.image || '/images/sede-placeholder.png'} 
             alt={center.name} 
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
           <div className="absolute top-4 left-4">
-             <span className="bg-white/90 backdrop-blur text-slate-900 text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest shadow-sm">
+             <span className="bg-white/85 backdrop-blur text-slate-900 text-[11px] font-black px-3 py-2 rounded-xl uppercase tracking-[0.12em] shadow-sm">
                 {center.type}
              </span>
           </div>
-          <div className="absolute bottom-4 right-4 group-hover:translate-x-1 transition-transform">
-             <div className="bg-slate-900 text-white p-2 rounded-lg shadow-xl">
+          <div className="absolute bottom-5 right-5 group-hover:translate-x-1 transition-transform">
+             <a
+               href={center.link}
+               target="_blank"
+               rel="noreferrer"
+               className="bg-[#111827] text-white p-3 rounded-full shadow-xl inline-flex border border-white/20"
+               aria-label={`Abrir ${center.name}`}
+             >
                 <Navigation className="w-4 h-4" />
-             </div>
+             </a>
           </div>
        </div>
-       <div className="p-5 flex-1 flex flex-col">
-          <h4 className="text-lg font-bold text-slate-900 mb-1">{center.name}</h4>
-          <div className="flex items-center text-slate-400 text-xs mb-4">
-             <MapPin className="w-3 h-3 mr-1" />
-             {center.address}
-          </div>
-          
-          <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
-             <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Espera Guardia</span>
-                <span className={`text-sm font-bold ${center.status === 'normal' || !center.status ? 'text-green-600' : 'text-amber-500'}`}>
-                   {center.guardTime || '10 min'}
-                </span>
-             </div>
-             <a href={`tel:${center.phone?.replace(/\s/g, '')}`} className="p-2 rounded-full hover:bg-slate-50 transition-colors text-slate-400 hover:text-slate-900">
-                <Phone className="w-4 h-4" />
-             </a>
+       <div className="px-5 pb-5 pt-4 flex-1 flex flex-col bg-white">
+          <h4 className="text-[2.1rem] md:text-[2.3rem] font-black leading-none tracking-[-0.06em] text-slate-900 mb-3">{center.name}</h4>
+          <div className="flex items-center text-slate-600 text-[1rem] md:text-[1.15rem] font-medium gap-2">
+             <MapPin className="w-4 h-4 text-slate-500" />
+             <span>{center.address}</span>
           </div>
        </div>
     </div>
