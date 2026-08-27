@@ -159,6 +159,87 @@ export async function getHisFinanciadoresCatalogo(): Promise<HisFinanciadorCatal
   return hisGet<HisFinanciadorCatalogo[]>("/v1/turnos/financiadores/catalogo");
 }
 
+export type PublicInsuranceProvider = {
+  id: string;
+  name: string;
+  plans: { id: string; name: string }[];
+};
+
+export async function getInsuranceCatalogForPublicSignup(): Promise<PublicInsuranceProvider[]> {
+  const exampleCatalog: PublicInsuranceProvider[] = [
+    {
+      id: "osde",
+      name: "OSDE",
+      plans: [
+        { id: "osde-basica", name: "Básica" },
+        { id: "osde-plus", name: "Plus" },
+        { id: "osde-oro", name: "Oro" },
+      ],
+    },
+    {
+      id: "swiss-medical",
+      name: "Swiss Medical",
+      plans: [
+        { id: "swiss-standard", name: "Standard" },
+        { id: "swiss-oro", name: "Oro" },
+        { id: "swiss-platinum", name: "Platinum" },
+      ],
+    },
+    {
+      id: "galeno",
+      name: "Galeno",
+      plans: [
+        { id: "galeno-club", name: "Club" },
+        { id: "galeno-elite", name: "Elite" },
+      ],
+    },
+    {
+      id: "medicus",
+      name: "Medicus",
+      plans: [
+        { id: "medicus-100", name: "100" },
+        { id: "medicus-200", name: "200" },
+      ],
+    },
+  ];
+
+  try {
+    const hisCatalogo = await getHisFinanciadoresCatalogo();
+
+    if (Array.isArray(hisCatalogo) && hisCatalogo.length > 0) {
+      const byProvider = new Map<string, PublicInsuranceProvider>();
+
+      for (const item of hisCatalogo) {
+        const providerKey = item.financiadorId ?? item.financiadorNombre;
+        const provider = byProvider.get(providerKey) ?? {
+          id: providerKey,
+          name: item.financiadorNombre || "Financiador",
+          plans: [],
+        };
+
+        const planKey = item.planId ?? `${providerKey}-${item.planNombre}`;
+        const hasPlan = provider.plans.some((plan) => plan.id === planKey);
+
+        if (!hasPlan) {
+          provider.plans.push({
+            id: planKey,
+            name: item.planNombre || "Plan",
+          });
+        }
+
+        byProvider.set(providerKey, provider);
+      }
+
+      const mapped = [...byProvider.values()].sort((a, b) => a.name.localeCompare(b.name));
+      if (mapped.length > 0) return mapped;
+    }
+  } catch (error) {
+    console.warn("[HISAdapter] No se pudo obtener el catálogo de prepagas desde HIS. Se usan ejemplos locales.", error);
+  }
+
+  return exampleCatalog;
+}
+
 export async function guardarFinanciadorPacienteHis(
   pacienteId: string,
   request: { financiadorId: string; planId: string; numeroAfiliado?: string }

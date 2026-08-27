@@ -101,9 +101,9 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:3010/api
       NEXT_PUBLIC_HIS_API_URL: ${NEXT_PUBLIC_HIS_API_URL:-http://localhost:3001/api}
       HIS_API_BASE_URL: ${HIS_API_BASE_URL:-http://his_backend:8080/api}
-      HIS_API_USERNAME: ${HIS_API_USERNAME:-admin_portal}
+      HIS_API_USERNAME: ${HIS_API_USERNAME:-admin}
       HIS_API_PASSWORD: ${HIS_API_PASSWORD:-admin}
-      HIS_LOGIN_CENTRO_ID: ${HIS_LOGIN_CENTRO_ID:-eae87db3-1bea-413e-bba5-c94aa951bca2}
+      HIS_LOGIN_CENTRO_ID: ${HIS_LOGIN_CENTRO_ID:-global}
       DATABASE_URL: postgresql://${POSTGRES_USER:-vitalflow_user}:${POSTGRES_PASSWORD:-secure_password_change_me}@postgres:5432/${POSTGRES_DB:-vitalflow_portal}
       REDIS_URL: redis://:${REDIS_PASSWORD:-redis_secure_password}@redis:6379
       JWT_SECRET: ${JWT_SECRET:-portal-jwt-secret-change-me}
