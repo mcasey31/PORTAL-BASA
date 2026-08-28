@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getInsuranceCatalogForPublicSignup } from "~/server/services/his/vitalflow-adapter";
+import { db } from "~/server/db";
 
 const exampleProviders = [
   {
@@ -41,8 +41,13 @@ const exampleProviders = [
 
 export async function GET() {
   try {
-    const providers = await getInsuranceCatalogForPublicSignup();
-    return NextResponse.json({ providers: providers.length > 0 ? providers : exampleProviders });
+    const providers = await db.insuranceProvider.findMany({
+      include: { plans: { select: { id: true, name: true }, orderBy: { name: "asc" } } },
+      orderBy: { name: "asc" },
+    });
+    return NextResponse.json({
+      providers: providers.length > 0 ? providers.map(({ id, name, plans }) => ({ id, name, plans })) : exampleProviders,
+    });
   } catch (error) {
     console.error("[PublicInsuranceProviders]", error);
     return NextResponse.json({ providers: exampleProviders, error: "No se pudo cargar catalogo del HIS; se usan ejemplos" });

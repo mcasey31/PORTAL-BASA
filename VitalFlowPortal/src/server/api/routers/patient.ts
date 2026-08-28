@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { getHisFinanciadoresCatalogo, guardarFinanciadorPacienteHis } from "~/server/services/his/vitalflow-adapter";
+import { guardarFinanciadorPacienteHis } from "~/server/services/his/vitalflow-adapter";
 
 export const patientRouter = createTRPCRouter({
   getFamilyMembers: protectedProcedure.query(async ({ ctx }) => {
@@ -172,36 +172,6 @@ export const patientRouter = createTRPCRouter({
 
   // Listar Obras Sociales para el buscador
   getInsuranceProviders: protectedProcedure.query(async ({ ctx }) => {
-    const hisCatalogo = await getHisFinanciadoresCatalogo();
-
-    for (const item of hisCatalogo) {
-      const provider = await ctx.db.insuranceProvider.upsert({
-        where: { hisFinanciadorId: item.financiadorId },
-        update: {
-          name: item.financiadorNombre,
-          code: item.financiadorCodigo || null,
-        },
-        create: {
-          name: item.financiadorNombre,
-          code: item.financiadorCodigo || null,
-          hisFinanciadorId: item.financiadorId,
-        },
-      });
-
-      await ctx.db.insurancePlan.upsert({
-        where: { hisPlanId: item.planId },
-        update: {
-          name: item.planNombre,
-          insuranceProviderId: provider.id,
-        },
-        create: {
-          name: item.planNombre,
-          insuranceProviderId: provider.id,
-          hisPlanId: item.planId,
-        },
-      });
-    }
-
     return await ctx.db.insuranceProvider.findMany({
       include: { plans: { orderBy: { name: "asc" } } },
       orderBy: { name: "asc" }
