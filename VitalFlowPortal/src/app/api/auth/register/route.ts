@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 
 import { db } from "~/server/db";
-import { getHisPatientIdByDni } from "~/server/services/his/vitalflow-adapter";
 
 type RegisterBody = {
+  tipoDocumento?: string;
   dni?: string;
+  numeroDocumento?: string;
   password?: string;
   name?: string;
   phoneNumber?: string;
@@ -22,7 +23,8 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json()) as RegisterBody;
 
-    const dni = (body.dni ?? "").trim();
+    const tipoDocumento = (body.tipoDocumento ?? "DNI").trim().toUpperCase();
+    const dni = (body.numeroDocumento ?? body.dni ?? "").trim();
     const password = (body.password ?? "").trim();
     const name = (body.name ?? "").trim();
     const phoneNumber = (body.phoneNumber ?? "").trim();
@@ -34,8 +36,8 @@ export async function POST(req: Request) {
     const membershipNumber = (body.membershipNumber ?? "").trim();
     const fieldErrors: Record<string, string> = {};
 
-    if (!dni) fieldErrors.dni = "Ingresá tu DNI.";
-    else if (!/^\d{7,8}$/.test(dni)) fieldErrors.dni = "El DNI debe tener entre 7 y 8 dígitos.";
+    if (!dni) fieldErrors.numeroDocumento = "Ingresá tu número de documento.";
+    else if (tipoDocumento === "DNI" && !/^\d{7,8}$/.test(dni)) fieldErrors.numeroDocumento = "El DNI debe tener entre 7 y 8 dígitos.";
 
     if (!password) fieldErrors.password = "Ingresá una contraseña.";
     else if (!passwordPattern.test(password)) fieldErrors.password = "La contraseña debe tener 8 caracteres, mayúscula, número y símbolo.";
@@ -56,26 +58,20 @@ export async function POST(req: Request) {
       );
     }
 
-    const hisPatientId = await getHisPatientIdByDni(dni);
-    if (!hisPatientId) {
-      return NextResponse.json(
-        {
-          message: "No se encontró un paciente activo en HIS para ese DNI.",
-          fieldErrors: { dni: "No existe un paciente activo en HIS para este DNI." },
-        },
-        { status: 404 },
-      );
-    }
-
-    const email = `dni-${dni}@pacientes.local`;
-    const username = `paciente-${dni}`;
+    const documentKey = tipoDocumento === "DNI" ? dni : `${tipoDocumento.toLowerCase()}-${dni}`;
+    const email = tipoDocumento === "DNI"
+      ? `dni-${dni}@pacientes.local`
+      : `documento-${documentKey}@pacientes.local`;
+    const username = tipoDocumento === "DNI"
+      ? `paciente-${dni}`
+      : `paciente-${documentKey}`;
 
     const existingUser = await db.user.findUnique({ where: { email } });
     if (existingUser) {
       return NextResponse.json(
         {
           message: "Ya existe una cuenta para este DNI.",
-          fieldErrors: { dni: "Ya existe una cuenta para este DNI. Usá recuperar contraseña." },
+          fieldErrors: { numeroDocumento: "Ya existe una cuenta para este documento. Usá recuperar contraseña." },
         },
         { status: 409 },
       );
@@ -94,8 +90,9 @@ export async function POST(req: Request) {
     await db.patient.create({
       data: {
         userId: user.id,
-        hisId: hisPatientId,
+        hisId: null,
         dni,
+        tipoDocumentoCodigo: tipoDocumento,
         phoneNumber: phoneNumber || null,
         address: address || null,
         city: city || null,

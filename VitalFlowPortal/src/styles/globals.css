@@ -98,6 +98,25 @@
   @apply bg-white border border-slate-900/[0.05] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)] hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] transition-all duration-500 ease-out;
 }
 
+@keyframes basa-square-in {
+  0%, 100% { opacity: 0.25; transform: scale(0.7); }
+  35%, 70% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes basa-logo-breathe {
+  0%, 100% { transform: scale(0.98); }
+  50% { transform: scale(1.02); }
+}
+
+.basa-square {
+  @apply h-3 w-3 rounded-[3px] bg-[#28716e] shadow-[0_4px_12px_rgba(40,113,110,0.28)];
+  animation: basa-square-in 1.8s ease-in-out infinite;
+}
+
+.basa-square-1 { animation-delay: 0.15s; }
+.basa-square-2 { animation-delay: 0.55s; }
+.basa-square-3 { animation-delay: 0.95s; }
+
 .luxury-gradient {
   @apply bg-gradient-to-br from-blue-600 via-indigo-600 to-indigo-800;
 }

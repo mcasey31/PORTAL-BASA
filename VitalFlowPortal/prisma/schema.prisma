@@ -41,7 +41,8 @@ model Patient {
     id           String   @id @default(cuid())
     userId       String   @unique
     institutionId String?
-    dni          String?  
+    tipoDocumentoCodigo String @default("DNI")
+    dni          String?
     passport     String?  
     gender       String?
     birthDate    DateTime?
@@ -62,6 +63,7 @@ model Patient {
     
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     institution  Institution? @relation(fields: [institutionId], references: [id])
+    tipoDocumento DocumentType @relation(fields: [tipoDocumentoCodigo], references: [codigo])
     insurance    InsuranceProvider? @relation(fields: [insuranceProviderId], references: [id])
     plan         InsurancePlan?     @relation(fields: [insurancePlanId], references: [id])
     
@@ -74,8 +76,18 @@ model Patient {
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt
 
-    @@unique([dni, institutionId])
+    @@unique([tipoDocumentoCodigo, dni, institutionId])
     @@map("patients")
+}
+
+model DocumentType {
+    codigo     String    @id
+    nombre     String
+    activo     Boolean   @default(true)
+    orden      Int       @default(0)
+    patients   Patient[]
+
+    @@map("tipo_documento")
 }
 
 model MedicalCenter {
@@ -221,6 +233,10 @@ model User {
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+    validado      Boolean   @default(false)
+    validadoAt    DateTime?
+    terminosAceptados Boolean @default(false)
+    terminosAceptadosAt DateTime?
     
     institution   Institution? @relation(fields: [institutionId], references: [id])
     accounts      Account[]

@@ -167,8 +167,8 @@ export default function SignUpPage() {
     const phoneDigits = form.phoneNumber.replace(/\D/g, "");
     const validationErrors: Record<string, string> = {};
 
-    if (!normalizedDni) validationErrors.dni = "Ingresá tu DNI.";
-    else if (!/^\d{7,8}$/.test(normalizedDni)) validationErrors.dni = "El DNI debe tener entre 7 y 8 dígitos.";
+    if (!normalizedDni) validationErrors.dni = "Ingresá tu número de documento.";
+    else if (form.tipoDocumento === "DNI" && !/^\d{7,8}$/.test(normalizedDni)) validationErrors.dni = "El DNI debe tener entre 7 y 8 dígitos.";
 
     if (!firstName) validationErrors.firstName = "Ingresá tu nombre.";
     if (!lastName) validationErrors.lastName = "Ingresá tu apellido.";

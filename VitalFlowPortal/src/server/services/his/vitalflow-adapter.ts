@@ -252,14 +252,18 @@ export async function guardarFinanciadorPacienteHis(
   });
 }
 
-export async function getHisPatientIdByDni(dni: string): Promise<string | null> {
-  const numeroDocumento = dni.trim();
+export async function getHisPatientIdByDocument(
+  tipoDocumento: string,
+  numeroDocumentoInput: string,
+): Promise<string | null> {
+  const tipo = tipoDocumento.trim().toUpperCase() || "DNI";
+  const numeroDocumento = numeroDocumentoInput.trim();
   if (!numeroDocumento) {
     return null;
   }
 
   const query = new URLSearchParams({
-    tipoDocumento: "DNI",
+    tipoDocumento: tipo,
     numeroDocumento,
   }).toString();
 
@@ -273,11 +277,15 @@ export async function getHisPatientIdByDni(dni: string): Promise<string | null> 
 
   const exact = pacientes.find(
     (p) =>
-      p.tipoDocumento?.toUpperCase() === "DNI" &&
+      p.tipoDocumento?.toUpperCase() === tipo &&
       p.numeroDocumento?.trim() === numeroDocumento
   );
 
   return (exact ?? pacientes[0])?.id ?? null;
+}
+
+export function getHisPatientIdByDni(dni: string): Promise<string | null> {
+  return getHisPatientIdByDocument("DNI", dni);
 }
 
 function mapTurnoEstadoToAppointmentStatus(estado: string): AppointmentStatus {

@@ -3,6 +3,45 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { getHisFinanciadoresCatalogo, guardarFinanciadorPacienteHis } from "~/server/services/his/vitalflow-adapter";
 
 export const patientRouter = createTRPCRouter({
+  getAccessStatus: protectedProcedure.query(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { validado: true, validadoAt: true, terminosAceptados: true, terminosAceptadosAt: true },
+    });
+
+    return user ?? { validado: false, validadoAt: null, terminosAceptados: false, terminosAceptadosAt: null };
+  }),
+
+  validateNetworkAttendance: protectedProcedure.mutation(async ({ ctx }) => {
+    await new Promise((resolve) => setTimeout(resolve, 1400));
+
+    const patient = await ctx.db.patient.findUnique({
+      where: { userId: ctx.session.user.id },
+      select: { dni: true, birthDate: true, gender: true },
+    });
+    const attendedInNetwork = patient?.dni === "27483779";
+
+    const user = await ctx.db.user.update({
+      where: { id: ctx.session.user.id },
+      data: { validado: attendedInNetwork, validadoAt: new Date() },
+      select: { validado: true, validadoAt: true },
+    });
+
+    return {
+      validado: user.validado,
+      servicio: "simulado",
+      criterios: { documento: Boolean(patient?.dni), fechaNacimiento: Boolean(patient?.birthDate), sexo: Boolean(patient?.gender) },
+    };
+  }),
+
+  acceptTerms: protectedProcedure.mutation(async ({ ctx }) => {
+    return ctx.db.user.update({
+      where: { id: ctx.session.user.id },
+      data: { terminosAceptados: true, terminosAceptadosAt: new Date() },
+      select: { terminosAceptados: true, terminosAceptadosAt: true },
+    });
+  }),
+
   // Obtener estado de onboarding y datos actuales
   getOnboardingStatus: protectedProcedure.query(async ({ ctx }) => {
     try {

@@ -4,7 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 import { db } from "~/server/db";
-import { getHisPatientIdByDni } from "~/server/services/his/vitalflow-adapter";
+import { getHisPatientIdByDocument } from "~/server/services/his/vitalflow-adapter";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -46,19 +46,30 @@ export const authConfig = {
         id: "paciente-dni",
         name: "Acceso Paciente (DNI)",
         credentials: {
+          tipoDocumento: { label: "Tipo de documento", type: "text" },
+          numeroDocumento: { label: "Número de documento", type: "text", placeholder: "12345678" },
           dni: { label: "DNI", type: "text", placeholder: "12345678" },
           password: { label: "Contraseña", type: "password" }
         },
         async authorize(credentials) {
-            if (!credentials?.dni || !credentials?.password) return null;
+            if ((!credentials?.numeroDocumento && !credentials?.dni) || !credentials?.password) return null;
 
             try {
-              const dni = String(credentials.dni).trim();
+              const tipoDocumento = String(credentials.tipoDocumento || "DNI").trim().toUpperCase();
+              const dni = String(credentials.numeroDocumento || credentials.dni).trim();
               const password = String(credentials.password).trim();
-              const email = `dni-${dni}@pacientes.local`;
-              const username = `paciente-${dni}`;
+              const email = tipoDocumento === "DNI"
+                ? `dni-${dni}@pacientes.local`
+                : `documento-${tipoDocumento.toLowerCase()}-${dni}@pacientes.local`;
+              const username = tipoDocumento === "DNI"
+                ? `paciente-${dni}`
+                : `paciente-${tipoDocumento.toLowerCase()}-${dni}`;
 
-              let user = await db.user.findUnique({ where: { email } });
+              const patientByDocument = await db.patient.findFirst({
+                where: { tipoDocumentoCodigo: tipoDocumento, dni },
+                select: { user: true },
+              });
+              let user = patientByDocument?.user ?? await db.user.findUnique({ where: { email } });
               if (!user) {
                 user = await db.user.findUnique({ where: { username } });
               }
@@ -70,7 +81,7 @@ export const authConfig = {
 
               let hisPatientId: string | null = null;
               try {
-                hisPatientId = await getHisPatientIdByDni(dni);
+                hisPatientId = await getHisPatientIdByDocument(tipoDocumento, dni);
               } catch (error) {
                 console.warn(`[DNI Auth] HIS lookup failed for DNI ${dni}; falling back to local user validation.`, error);
               }
@@ -103,6 +114,7 @@ export const authConfig = {
                       userId: user.id,
                       hisId: hisPatientId,
                       dni,
+                      tipoDocumentoCodigo: tipoDocumento,
                       onboardingCompleted: true,
                     },
                   });
@@ -114,6 +126,7 @@ export const authConfig = {
                       where: { userId: user.id },
                       data: {
                         dni,
+                        tipoDocumentoCodigo: tipoDocumento,
                         hisId: hisPatientId,
                         onboardingCompleted: true,
                       },
@@ -130,6 +143,7 @@ export const authConfig = {
                     data: {
                       userId: user.id,
                       dni,
+                      tipoDocumentoCodigo: tipoDocumento,
                       onboardingCompleted: true,
                     },
                   });
