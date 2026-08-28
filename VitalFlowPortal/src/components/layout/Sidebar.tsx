@@ -37,11 +37,13 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
       <div className="p-6 lg:p-10 flex-1">
         <div className="flex items-center justify-between mb-8 lg:mb-14">
           <div className="flex items-center gap-3 px-2">
-            <img
-              src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
-              alt="RED BASA"
-              className="h-8 w-auto object-contain"
-            />
+            <Link href="/" aria-label="Volver al inicio">
+              <img
+                src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
+                alt="RED BASA"
+                className="h-8 w-auto object-contain"
+              />
+            </Link>
           </div>
 
           {/* Botón de cerrar solo en mobile */}

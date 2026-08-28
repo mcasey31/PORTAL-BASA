@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Sidebar } from "~/components/layout/Sidebar";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { PLATFORM_CONFIG } from "~/config/platform";
 
 export default function PortalLayout({
@@ -63,11 +64,13 @@ export default function PortalLayout({
                 </button>
 
                 <div className="flex items-center gap-3">
+                  <Link href="/" aria-label="Volver al inicio">
                     <img
-                        src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
-                        alt="RED BASA"
-                        className="h-7 w-auto object-contain"
+                      src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
+                      alt="RED BASA"
+                      className="h-7 w-auto object-contain"
                     />
+                  </Link>
                 </div>
                 
                 <div className="hidden lg:flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-50 border border-slate-100 focus-within:bg-white focus-within:border-blue-200 transition-all duration-500 group">
