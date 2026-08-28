@@ -7,6 +7,7 @@ import { api } from "~/trpc/react";
 const MEMBER_COOKIE = "portal_member_id";
 
 export function FamilyMemberSelector() {
+  const utils = api.useUtils();
   const { data: members, isLoading } = api.patient.getFamilyMembers.useQuery();
   const [selectedId, setSelectedId] = useState("");
 
@@ -24,6 +25,9 @@ export function FamilyMemberSelector() {
     window.localStorage.setItem(MEMBER_COOKIE, value);
     document.cookie = `${MEMBER_COOKIE}=${value}; path=/; max-age=2592000; samesite=lax`;
     window.dispatchEvent(new CustomEvent("portal-member-changed", { detail: value }));
+    void utils.health.getAppointments.invalidate();
+    void utils.health.getDashboardSummary.invalidate();
+    void utils.health.getMedicalHistory.invalidate();
   };
 
   return (

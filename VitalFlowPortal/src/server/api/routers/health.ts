@@ -1,15 +1,22 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
-import { getSelectores, buscarDisponibilidad, getPatientAppointmentsFromHis, reservarTurno, cancelarTurno } from "~/server/services/his/vitalflow-adapter";
+import { getSelectores, buscarDisponibilidad, getPatientAppointmentsFromHis, reservarTurno, cancelarTurno, getHisPatientIdByDocument } from "~/server/services/his/vitalflow-adapter";
 
-async function getHisPatientIdForUser(userId: string): Promise<string> {
-  const patient = await db.patient.findUnique({
-    where: { userId },
-    select: { hisId: true },
-  });
+async function getHisPatientIdForContext(userId: string, headers: Headers): Promise<string> {
+  const cookieHeader = headers.get("cookie") ?? "";
+  const selectedMemberId = cookieHeader.match(/(?:^|;\s*)portal_member_id=([^;]+)/)?.[1];
+  const principal = await db.patient.findUnique({ where: { userId }, select: { id: true, hisId: true } });
+  const patient = selectedMemberId && selectedMemberId !== principal?.id
+    ? await db.dependent.findFirst({ where: { id: selectedMemberId, principalPatientId: principal?.id }, select: { tipoDocumentoCodigo: true, dni: true } })
+    : principal;
 
-  if (!patient?.hisId) {
+  if (patient && "tipoDocumentoCodigo" in patient) {
+    const hisId = await getHisPatientIdByDocument(patient.tipoDocumentoCodigo, patient.dni);
+    if (hisId) return hisId;
+  }
+
+  if (!patient || !("hisId" in patient) || !patient.hisId) {
     throw new Error("Paciente sin vinculacion HIS. Complete onboarding y mapeo hisId.");
   }
 
@@ -20,7 +27,7 @@ async function getHisPatientIdForUser(userId: string): Promise<string> {
 export const healthRouter = createTRPCRouter({
   // Obtener resumen para el Dashboard
   getDashboardSummary: protectedProcedure.query(async ({ ctx }) => {
-    const hisPatientId = await getHisPatientIdForUser(ctx.session.user.id);
+    const hisPatientId = await getHisPatientIdForContext(ctx.session.user.id, ctx.headers);
     const appointments = await getPatientAppointmentsFromHis(hisPatientId, {
       historial: false,
       page: 1,
@@ -49,7 +56,7 @@ export const healthRouter = createTRPCRouter({
 
   // Obtener turnos reservados del paciente: futuros + historial
   getAppointments: protectedProcedure.query(async ({ ctx }) => {
-    const hisPatientId = await getHisPatientIdForUser(ctx.session.user.id);
+    const hisPatientId = await getHisPatientIdForContext(ctx.session.user.id, ctx.headers);
 
     const futureAppointments = await getPatientAppointmentsFromHis(hisPatientId, {
       historial: false,
@@ -85,7 +92,7 @@ export const healthRouter = createTRPCRouter({
       profesionalId: z.string().optional(),
     }))
     .query(async ({ ctx, input }) => {
-      const hisPatientId = await getHisPatientIdForUser(ctx.session.user.id);
+      const hisPatientId = await getHisPatientIdForContext(ctx.session.user.id, ctx.headers);
       const slots = await buscarDisponibilidad({
         pacienteId: hisPatientId,
         centroIds: input.centroIds,
@@ -123,7 +130,7 @@ export const healthRouter = createTRPCRouter({
       profesionalId: z.string().optional(),
     }))
     .query(async ({ ctx, input }) => {
-      const hisPatientId = await getHisPatientIdForUser(ctx.session.user.id);
+      const hisPatientId = await getHisPatientIdForContext(ctx.session.user.id, ctx.headers);
       const selectores = await getSelectores();
 
       const practicas = selectores.practicas.filter((p) => {
@@ -336,7 +343,7 @@ export const healthRouter = createTRPCRouter({
       try {
         console.log(`[health.reservarTurno] User ${ctx.session.user.id} reserving slot ${input.slotId}`);
 
-        const hisPatientId = await getHisPatientIdForUser(ctx.session.user.id);
+        const hisPatientId = await getHisPatientIdForContext(ctx.session.user.id, ctx.headers);
 
         // Call HIS to reserve the slot
         const result = await reservarTurno(input.slotId, hisPatientId);
