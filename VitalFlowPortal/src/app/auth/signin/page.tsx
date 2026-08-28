@@ -3,7 +3,8 @@
 import { signIn } from "next-auth/react";
 import { ArrowLeft, ShieldCheck, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 function BasaBrandMark() {
   return (
@@ -18,11 +19,43 @@ function BasaBrandMark() {
 }
 
 export default function PatientSignInPage() {
+  const searchParams = useSearchParams();
+  const [showBasaIntro, setShowBasaIntro] = useState(searchParams.get("from") === "corporate");
   const [dni, setDni] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!showBasaIntro) return;
+    const timer = window.setTimeout(() => setShowBasaIntro(false), 2600);
+    return () => window.clearTimeout(timer);
+  }, [showBasaIntro]);
+
+  if (showBasaIntro) {
+    return (
+      <main className="min-h-screen overflow-hidden bg-[#dff7f3] text-[#125c5b]">
+        <div className="relative flex min-h-screen items-center justify-center px-6 py-12">
+          <div className="absolute -left-24 top-1/3 h-72 w-72 rounded-full bg-white/35 blur-3xl" />
+          <div className="absolute -right-24 bottom-1/4 h-96 w-96 rounded-full bg-[#a7e4dc]/60 blur-3xl" />
+          <div className="relative flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-700">
+            <div className="mb-9 flex h-32 w-32 items-center justify-center rounded-[2.25rem] bg-white/70 p-5 shadow-[0_24px_70px_rgba(18,92,91,0.16)] ring-1 ring-white/80 animate-pulse">
+              <img
+                src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
+                alt="RED BASA"
+                className="h-auto w-full object-contain"
+              />
+            </div>
+            <p className="text-5xl font-black tracking-[-0.06em] text-[#0b5554] sm:text-7xl">RED BASA</p>
+            <div className="mt-6 h-px w-20 bg-[#4a9f99]/60" />
+            <p className="mt-6 text-sm font-bold uppercase tracking-[0.22em] text-[#28716e]">Grupo Olmos</p>
+            <p className="mt-2 text-base font-medium text-[#28716e]">Construyendo un Futuro Mejor</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const handleDniLogin = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -32,7 +32,7 @@ export default function CorporateLayout({
           </div>
 
           <div className="flex items-center gap-4">
-            <Link href="/auth/signin" className="hidden sm:block px-4 py-2.5 text-[10px] font-black text-emerald-700 uppercase tracking-widest hover:bg-emerald-50 rounded-xl transition-all">
+            <Link href="/auth/signin?from=corporate" className="hidden sm:block px-4 py-2.5 text-[10px] font-black text-emerald-700 uppercase tracking-widest hover:bg-emerald-50 rounded-xl transition-all">
               Pacientes
             </Link>
             <Link href="/staff/login" className="hidden sm:block px-4 py-2.5 text-[10px] font-black text-indigo-700 uppercase tracking-widest hover:bg-indigo-50 rounded-xl transition-all">

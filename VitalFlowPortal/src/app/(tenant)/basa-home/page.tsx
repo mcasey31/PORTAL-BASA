@@ -83,7 +83,7 @@ export default function QuantumHomePage() {
 
           <div className="flex items-center gap-3">
             <Link
-              href="/auth/signin"
+              href="/auth/signin?from=corporate"
               className="rounded-full bg-gradient-to-r from-[#1f4fbf] to-[#4c6de0] px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-xl shadow-blue-600/25 transition-all hover:-translate-y-[1px] hover:from-[#17439f] hover:to-[#3f60d0]"
             >
               Portal Paciente
@@ -120,7 +120,7 @@ export default function QuantumHomePage() {
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <Link
-                href="/auth/signin"
+                href="/auth/signin?from=corporate"
                 className="group inline-flex items-center justify-center gap-3 rounded-[1.2rem] bg-[#0f2e6d] px-8 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-[#0b2559]"
               >
                 Ingresar al Portal Paciente
@@ -207,7 +207,7 @@ export default function QuantumHomePage() {
                   </div>
                   <h3 className="text-2xl font-black tracking-tight text-slate-900">{service.title}</h3>
                   <p className="mt-3 text-sm leading-relaxed text-slate-600">{service.description}</p>
-                  <Link href="/auth/signin" className="mt-6 inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#1f4fbf] transition-colors hover:text-[#153f9c]">
+                  <Link href="/auth/signin?from=corporate" className="mt-6 inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#1f4fbf] transition-colors hover:text-[#153f9c]">
                     Portal Paciente
                     <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -287,7 +287,7 @@ export default function QuantumHomePage() {
                 <Users className="h-5 w-5 text-white" />
                 <p className="text-sm font-semibold text-white">Mesa de soporte institucional</p>
               </div>
-              <Link href="/auth/signin" className="inline-flex w-full items-center justify-center gap-3 rounded-xl bg-white px-6 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-[#1f4fbf] transition-colors hover:bg-blue-50">
+              <Link href="/auth/signin?from=corporate" className="inline-flex w-full items-center justify-center gap-3 rounded-xl bg-white px-6 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-[#1f4fbf] transition-colors hover:bg-blue-50">
                 Ingresar al Portal Paciente
                 <ArrowRight className="h-4 w-4" />
               </Link>

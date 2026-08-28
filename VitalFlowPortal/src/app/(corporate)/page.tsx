@@ -39,7 +39,7 @@ export default function CorporateLandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/auth/signin" className="w-full sm:w-auto px-10 py-5 bg-slate-900 text-white font-black rounded-[1.5rem] text-sm uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-2xl shadow-indigo-600/20 flex items-center justify-center gap-3 group">
+            <Link href="/auth/signin?from=corporate" className="w-full sm:w-auto px-10 py-5 bg-slate-900 text-white font-black rounded-[1.5rem] text-sm uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-2xl shadow-indigo-600/20 flex items-center justify-center gap-3 group">
               Portal Pacientes
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
@@ -73,7 +73,7 @@ export default function CorporateLandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Link href="/auth/signin" className="rounded-[2rem] border border-emerald-100 bg-emerald-50/50 p-8 hover:-translate-y-1 transition-all hover:shadow-xl hover:shadow-emerald-100/60">
+            <Link href="/auth/signin?from=corporate" className="rounded-[2rem] border border-emerald-100 bg-emerald-50/50 p-8 hover:-translate-y-1 transition-all hover:shadow-xl hover:shadow-emerald-100/60">
               <div className="inline-flex items-center gap-2 text-emerald-700 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
                 <Smartphone className="w-4 h-4" /> Pacientes
               </div>
