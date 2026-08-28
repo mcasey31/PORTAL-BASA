@@ -40,6 +40,19 @@ const documentTypes = [
   { code: "CEDULA_IDENTIDAD", name: "Cedula Identidad" },
 ];
 
+function getAge(birthDate: string) {
+  if (!birthDate) return null;
+  const birth = new Date(`${birthDate}T00:00:00`);
+  if (Number.isNaN(birth.getTime())) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const birthdayHasPassed = today.getMonth() > birth.getMonth()
+    || (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
+  if (!birthdayHasPassed) age -= 1;
+  return age;
+}
+
 function BasaBrandMark() {
   return (
     <div className="mx-auto mb-6 flex w-full justify-center">
@@ -61,10 +74,15 @@ export default function SignUpPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [verificationStep, setVerificationStep] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [devVerificationCode, setDevVerificationCode] = useState("");
 
   const [form, setForm] = useState({
     tipoDocumento: "DNI",
     dni: "",
+    email: "",
+    birthDate: "",
     firstName: "",
     lastName: "",
     secondName: "",
@@ -129,6 +147,7 @@ export default function SignUpPage() {
   );
 
   const cityOptions = selectedProvince?.cities ?? [];
+  const isUnder16 = (getAge(form.birthDate) ?? 16) < 16;
 
   const onChange = (field: keyof typeof form, value: string) => {
     setForm((prev) => {
@@ -163,6 +182,8 @@ export default function SignUpPage() {
     const normalizedDni = form.dni.trim();
     const firstName = form.firstName.trim();
     const lastName = form.lastName.trim();
+    const email = form.email.trim().toLowerCase();
+    const birthDate = form.birthDate.trim();
     const password = form.password.trim();
     const phoneDigits = form.phoneNumber.replace(/\D/g, "");
     const validationErrors: Record<string, string> = {};
@@ -172,6 +193,11 @@ export default function SignUpPage() {
 
     if (!firstName) validationErrors.firstName = "Ingresá tu nombre.";
     if (!lastName) validationErrors.lastName = "Ingresá tu apellido.";
+    if (!email) validationErrors.email = "Ingresá tu email.";
+    else if (!/^\S+@\S+\.\S+$/.test(email)) validationErrors.email = "Ingresá un email válido.";
+    if (!birthDate) validationErrors.birthDate = "Ingresá tu fecha de nacimiento.";
+    else if (new Date(`${birthDate}T00:00:00`) > new Date()) validationErrors.birthDate = "La fecha no puede ser futura.";
+    else if ((getAge(birthDate) ?? 16) < 16) validationErrors.birthDate = "Por edad, no podés crear una cuenta propia.";
     if (!form.address.trim()) validationErrors.address = "Ingresá tu dirección.";
     if (!form.province) validationErrors.province = "Seleccioná una provincia.";
     if (!form.city) validationErrors.city = "Seleccioná una ciudad.";
@@ -202,6 +228,8 @@ export default function SignUpPage() {
           numeroDocumento: normalizedDni,
           tipoDocumento: form.tipoDocumento,
           password,
+          email,
+          birthDate,
           name: fullName,
           phoneNumber: `${form.phoneCountryCode} ${form.phoneAreaCode} ${phoneDigits}`,
           address: form.address.trim(),
@@ -214,7 +242,7 @@ export default function SignUpPage() {
         }),
       });
 
-      const data = (await res.json()) as { ok?: boolean; error?: string; message?: string; fieldErrors?: Record<string, string> };
+      const data = (await res.json()) as { ok?: boolean; error?: string; message?: string; devVerificationCode?: string; fieldErrors?: Record<string, string> };
       if (!res.ok) {
         if (data.fieldErrors && Object.keys(data.fieldErrors).length > 0) {
           setFieldErrors(data.fieldErrors);
@@ -224,11 +252,36 @@ export default function SignUpPage() {
         throw new Error(data.error ?? data.message ?? "No se pudo crear la cuenta");
       }
 
-      setSuccess("Cuenta creada. Ya podes iniciar sesion con tu DNI y contrasena.");
+      setSuccess("Te enviamos un código de verificación a tu email.");
+      setDevVerificationCode(data.devVerificationCode ?? "");
+      setVerificationStep(true);
       setFieldErrors({});
-      setForm((prev) => ({ ...prev, password: "", confirmPassword: "" }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error inesperado");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleVerifyEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/register/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email.trim().toLowerCase(), code: verificationCode.trim() }),
+      });
+      const data = (await res.json()) as { ok?: boolean; message?: string; error?: string };
+      if (!res.ok) throw new Error(data.error ?? data.message ?? "Código inválido");
+      setVerificationStep(false);
+      setVerificationCode("");
+      setDevVerificationCode("");
+      setForm((prev) => ({ ...prev, password: "", confirmPassword: "" }));
+      setSuccess("Cuenta creada. Ya podés iniciar sesión con tu documento y contraseña.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo verificar el email");
     } finally {
       setSubmitting(false);
     }
@@ -243,8 +296,22 @@ export default function SignUpPage() {
           <p className="mt-2 text-sm text-slate-600">Completa los datos de la seccion Cuenta para habilitar tu acceso al portal.</p>
         </div>
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-6 [&_label]:text-center">
-          <div className="grid gap-4 md:grid-cols-2">
+        {verificationStep ? (
+          <form onSubmit={handleVerifyEmail} className="space-y-5 text-center">
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-6">
+              <p className="text-xs font-black uppercase tracking-widest text-emerald-700">Verificación de email</p>
+              <p className="mt-3 text-sm text-slate-600">Ingresá el código de 6 dígitos que enviamos a <strong>{form.email}</strong>.</p>
+              {devVerificationCode && <p className="mt-3 text-xs font-bold text-emerald-700">Código de prueba local: {devVerificationCode}</p>}
+            </div>
+            <input value={verificationCode} onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" maxLength={6} placeholder="000000" className="w-full rounded-xl border border-slate-200 px-4 py-4 text-center text-2xl tracking-[0.4em]" required />
+            <button type="submit" disabled={submitting || verificationCode.length !== 6} className="w-full rounded-2xl bg-emerald-700 py-4 text-sm font-black uppercase tracking-widest text-white disabled:opacity-60">{submitting ? "Validando..." : "Validar email y crear cuenta"}</button>
+            <button type="button" onClick={() => setVerificationStep(false)} className="text-xs font-bold uppercase tracking-wide text-slate-500">Volver a editar datos</button>
+          </form>
+        ) : (
+        <form onSubmit={handleSubmit} noValidate className="space-y-8 [&_label]:text-center">
+          <section className="space-y-5">
+            <h2 className="text-center text-xs font-black uppercase tracking-[0.2em] text-slate-400">Identificación</h2>
+          <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
             <div>
               <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-600">Tipo de documento</label>
               <select className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" value={form.tipoDocumento} onChange={(e) => onChange("tipoDocumento", e.target.value)}>
@@ -258,7 +325,7 @@ export default function SignUpPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
             <div>
               <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.lastName ? "text-red-600" : "text-slate-600"}`}>Apellido</label>
               <input className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.lastName ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.lastName} onChange={(e) => onChange("lastName", e.target.value)} required />
@@ -271,12 +338,35 @@ export default function SignUpPage() {
             </div>
           </div>
 
-          <div>
-            <div>
+          <div className="md:col-span-2">
+            <div className="mx-auto max-w-[calc(50%-0.75rem)] md:mx-0">
               <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-600">Segundo nombre</label>
               <input className="w-full rounded-xl border border-slate-200 px-4 py-3" value={form.secondName} onChange={(e) => onChange("secondName", e.target.value)} placeholder="Opcional" />
             </div>
           </div>
+          </section>
+
+          <fieldset disabled={isUnder16} className="contents">
+          <section className="space-y-5">
+            <h2 className="text-center text-xs font-black uppercase tracking-[0.2em] text-slate-400">Seguridad y contacto</h2>
+          <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
+            <div>
+              <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.birthDate ? "text-red-600" : "text-slate-600"}`}>Fecha de nacimiento</label>
+              <input type="date" className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.birthDate ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.birthDate} onChange={(e) => onChange("birthDate", e.target.value)} required />
+              {fieldErrors.birthDate && <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.birthDate}</p>}
+            </div>
+            <div>
+              <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.email ? "text-red-600" : "text-slate-600"}`}>Email</label>
+              <input type="email" autoComplete="email" placeholder="nombre@ejemplo.com" className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.email ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.email} onChange={(e) => onChange("email", e.target.value)} disabled={isUnder16} required />
+              {fieldErrors.email && <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.email}</p>}
+            </div>
+          </div>
+
+          {isUnder16 && (
+            <div role="alert" className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-center text-sm font-bold leading-relaxed text-amber-900">
+              Al ser menor de edad no es posible crear una cuenta, se debe asociar a una cuenta de padre/madre o tutor.
+            </div>
+          )}
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
@@ -323,7 +413,7 @@ export default function SignUpPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-x-6 gap-y-5 md:grid-cols-[0.7fr_1.5fr_0.8fr]">
             <div>
               <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.phoneCountryCode ? "text-red-600" : "text-slate-600"}`}>Prefijo</label>
               <select className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.phoneCountryCode ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.phoneCountryCode} onChange={(e) => onChange("phoneCountryCode", e.target.value)}>
@@ -346,8 +436,11 @@ export default function SignUpPage() {
               </select>
             </div>
           </div>
+          </section>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <section className="space-y-5">
+            <h2 className="text-center text-xs font-black uppercase tracking-[0.2em] text-slate-400">Domicilio</h2>
+          <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
             <div>
               <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.phoneNumber ? "text-red-600" : "text-slate-600"}`}>Telefono</label>
               <input className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.phoneNumber ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.phoneNumber} placeholder="Ej: 1551234567" onChange={(e) => onChange("phoneNumber", e.target.value.replace(/\D/g, "").slice(0, 12))} required />
@@ -359,8 +452,11 @@ export default function SignUpPage() {
               {fieldErrors.address && <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.address}</p>}
             </div>
           </div>
+          </section>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <section className="space-y-5">
+            <h2 className="text-center text-xs font-black uppercase tracking-[0.2em] text-slate-400">Cobertura de salud</h2>
+          <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
             <div>
               <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.city ? "text-red-600" : "text-slate-600"}`}>Ciudad</label>
               <select className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.city ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.city} onChange={(e) => onChange("city", e.target.value)}>
@@ -414,19 +510,23 @@ export default function SignUpPage() {
             <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-600">Numero de afiliado</label>
             <input className="w-full rounded-xl border border-slate-200 px-4 py-3" value={form.membershipNumber} onChange={(e) => onChange("membershipNumber", e.target.value)} />
           </div>
+          </section>
+
+          </fieldset>
 
           {error && <p className="text-sm font-bold text-red-600">{error}</p>}
           {success && <p className="text-sm font-bold text-emerald-600">{success}</p>}
 
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || isUnder16}
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 py-4 text-sm font-black uppercase tracking-widest text-white hover:bg-blue-700 disabled:opacity-60"
           >
             {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
             {submitting ? "Creando cuenta..." : "Crear cuenta"}
           </button>
         </form>
+        )}
 
         <div className="mt-6 text-center">
           <Link href="/auth/signin" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500 hover:text-blue-700">
