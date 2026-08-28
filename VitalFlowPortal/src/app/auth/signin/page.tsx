@@ -36,14 +36,19 @@ export default function PatientSignInPage() {
 
   if (showBasaIntro) {
     return (
-      <main className="min-h-screen overflow-hidden bg-[#dff7f3] text-[#125c5b]">
-        <div className="relative flex min-h-screen items-center justify-center px-6 py-12">
-          <div className="absolute -left-24 top-1/3 h-72 w-72 rounded-full bg-white/35 blur-3xl" />
-          <div className="absolute -right-24 bottom-1/4 h-96 w-96 rounded-full bg-[#a7e4dc]/60 blur-3xl" />
-          <div className="relative flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-700">
-            <div className="mb-10 flex w-[min(82vw,30rem)] items-center justify-center rounded-[2rem] bg-white/60 px-7 py-8 shadow-[0_24px_70px_rgba(18,92,91,0.16)] ring-1 ring-white/80">
+      <main className="h-dvh overflow-hidden bg-[#173b5d] text-white">
+        <div className="relative flex h-full items-center justify-center overflow-hidden px-5 py-6 sm:px-6 sm:py-8">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('https://grupoolmos.com.ar/wp-content/uploads/2022/10/grupoolmo-background.redimensionada.jpg')" }}
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 bg-[#123b5d]/65" aria-hidden="true" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0b2e4d]/45 via-transparent to-[#0b2e4d]/75" aria-hidden="true" />
+          <div className="relative flex max-h-full flex-col items-center text-center animate-in fade-in zoom-in-95 duration-700">
+            <div className="mb-5 flex w-[min(88vw,38rem)] items-center justify-center rounded-[2rem] bg-white/90 px-6 py-6 shadow-[0_24px_70px_rgba(4,25,48,0.32)] ring-1 ring-white/80 sm:mb-7 sm:px-10 sm:py-8">
               <img
-                src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
+                src="https://redbasa.com.ar/wp-content/uploads/2019/12/logo-redbasa-color-260x78.png"
                 alt="RED BASA"
                 className="h-auto w-full object-contain animate-[basa-logo-breathe_2.8s_ease-in-out_infinite]"
               />
@@ -62,8 +67,11 @@ export default function PatientSignInPage() {
                 <span className="basa-square basa-square-3" />
               </div>
             </div>
-            <p className="mt-8 text-2xl font-black uppercase tracking-[0.16em] text-[#28716e] sm:text-4xl">Grupo Olmos</p>
-            <p className="mt-2 text-base font-medium text-[#28716e]">Construyendo un Futuro Mejor</p>
+            <p className="mt-5 max-w-[min(92vw,42rem)] text-center text-xl font-black leading-tight tracking-[-0.03em] text-white drop-shadow-lg sm:mt-7 sm:text-4xl">
+              La Red de Salud Más Grande del País
+            </p>
+            <p className="mt-4 text-2xl font-black uppercase tracking-[0.12em] text-white drop-shadow-lg sm:mt-6 sm:text-5xl">Grupo Olmos</p>
+            <p className="mt-2 text-base font-semibold text-white/90 drop-shadow sm:text-2xl">Construyendo un Futuro Mejor</p>
           </div>
         </div>
       </main>
