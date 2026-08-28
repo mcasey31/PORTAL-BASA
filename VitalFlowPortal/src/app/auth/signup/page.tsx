@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { signIn } from "next-auth/react";
 import { ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
 
 type Plan = { id: string; name: string };
@@ -83,6 +84,7 @@ export default function SignUpPage() {
     dni: "",
     email: "",
     birthDate: "",
+    sexoCodigo: "",
     firstName: "",
     lastName: "",
     secondName: "",
@@ -230,6 +232,7 @@ export default function SignUpPage() {
           password,
           email,
           birthDate,
+          sexoCodigo: form.sexoCodigo,
           name: fullName,
           phoneNumber: `${form.phoneCountryCode} ${form.phoneAreaCode} ${phoneDigits}`,
           address: form.address.trim(),
@@ -275,11 +278,15 @@ export default function SignUpPage() {
       });
       const data = (await res.json()) as { ok?: boolean; message?: string; error?: string };
       if (!res.ok) throw new Error(data.error ?? data.message ?? "Código inválido");
-      setVerificationStep(false);
-      setVerificationCode("");
-      setDevVerificationCode("");
-      setForm((prev) => ({ ...prev, password: "", confirmPassword: "" }));
-      setSuccess("Cuenta creada. Ya podés iniciar sesión con tu documento y contraseña.");
+      const loginResult = await signIn("paciente-dni", {
+        tipoDocumento: form.tipoDocumento,
+        numeroDocumento: form.dni.trim(),
+        dni: form.dni.trim(),
+        password: form.password,
+        redirect: false,
+      });
+      if (loginResult?.error) throw new Error("La cuenta fue creada, pero no se pudo iniciar sesión automáticamente.");
+      window.location.href = "/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo verificar el email");
     } finally {
@@ -359,6 +366,16 @@ export default function SignUpPage() {
               <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.email ? "text-red-600" : "text-slate-600"}`}>Email</label>
               <input type="email" autoComplete="email" placeholder="nombre@ejemplo.com" className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.email ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.email} onChange={(e) => onChange("email", e.target.value)} disabled={isUnder16} required />
               {fieldErrors.email && <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.email}</p>}
+            </div>
+            <div>
+              <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.sexoCodigo ? "text-red-600" : "text-slate-600"}`}>Sexo</label>
+              <select value={form.sexoCodigo} onChange={(e) => onChange("sexoCodigo", e.target.value)} className={`w-full rounded-xl border bg-white px-4 py-3 ${fieldErrors.sexoCodigo ? "border-red-500 bg-red-50" : "border-slate-200"}`} disabled={isUnder16} required>
+                <option value="">Seleccionar...</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+                <option value="X">X</option>
+              </select>
+              {fieldErrors.sexoCodigo && <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.sexoCodigo}</p>}
             </div>
           </div>
 

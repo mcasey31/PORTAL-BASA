@@ -45,6 +45,7 @@ model Patient {
     dni          String?
     passport     String?  
     gender       String?
+    sexoCodigo   String?
     birthDate    DateTime?
     phoneNumber  String?
     
@@ -64,6 +65,7 @@ model Patient {
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     institution  Institution? @relation(fields: [institutionId], references: [id])
     tipoDocumento DocumentType @relation(fields: [tipoDocumentoCodigo], references: [codigo])
+    sexo         Sex?       @relation(fields: [sexoCodigo], references: [codigo])
     insurance    InsuranceProvider? @relation(fields: [insuranceProviderId], references: [id])
     plan         InsurancePlan?     @relation(fields: [insurancePlanId], references: [id])
     
@@ -90,6 +92,16 @@ model DocumentType {
     dependents Dependent[]
 
     @@map("tipo_documento")
+}
+
+model Sex {
+    codigo   String    @id
+    nombre   String
+    activo   Boolean   @default(true)
+    orden    Int       @default(0)
+    patients Patient[]
+
+    @@map("sexo")
 }
 
 model Dependent {

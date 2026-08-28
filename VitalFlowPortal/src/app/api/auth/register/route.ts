@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createHash, randomInt } from "node:crypto";
 
 import { db } from "~/server/db";
 
@@ -7,6 +8,9 @@ type RegisterBody = {
   dni?: string;
   numeroDocumento?: string;
   password?: string;
+  email?: string;
+  birthDate?: string;
+  sexoCodigo?: string;
   name?: string;
   phoneNumber?: string;
   address?: string;
@@ -19,6 +23,14 @@ type RegisterBody = {
 
 const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
+function getAge(birthDate: string) {
+  const birth = new Date(`${birthDate}T00:00:00`);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age -= 1;
+  return age;
+}
+
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as RegisterBody;
@@ -26,6 +38,9 @@ export async function POST(req: Request) {
     const tipoDocumento = (body.tipoDocumento ?? "DNI").trim().toUpperCase();
     const dni = (body.numeroDocumento ?? body.dni ?? "").trim();
     const password = (body.password ?? "").trim();
+    const email = (body.email ?? "").trim().toLowerCase();
+    const birthDate = (body.birthDate ?? "").trim();
+    const sexoCodigo = (body.sexoCodigo ?? "").trim().toUpperCase();
     const name = (body.name ?? "").trim();
     const phoneNumber = (body.phoneNumber ?? "").trim();
     const address = (body.address ?? "").trim();
@@ -43,6 +58,12 @@ export async function POST(req: Request) {
     else if (!passwordPattern.test(password)) fieldErrors.password = "La contraseña debe tener 8 caracteres, mayúscula, número y símbolo.";
 
     if (!name) fieldErrors.name = "Ingresá tu nombre y apellido.";
+    if (!email) fieldErrors.email = "Ingresá tu email.";
+    else if (!/^\S+@\S+\.\S+$/.test(email)) fieldErrors.email = "Ingresá un email válido.";
+    if (!birthDate) fieldErrors.birthDate = "Ingresá tu fecha de nacimiento.";
+    else if (Number.isNaN(Date.parse(`${birthDate}T00:00:00`)) || new Date(`${birthDate}T00:00:00`) > new Date()) fieldErrors.birthDate = "Ingresá una fecha de nacimiento válida.";
+    else if (getAge(birthDate) < 16) fieldErrors.birthDate = "Al ser menor de edad no es posible crear una cuenta, se debe asociar a una cuenta de padre/madre o tutor.";
+    if (!['M', 'F', 'X'].includes(sexoCodigo)) fieldErrors.sexoCodigo = "Seleccioná tu sexo.";
     if (!address) fieldErrors.address = "Ingresá tu dirección.";
     if (!city) fieldErrors.city = "Seleccioná una ciudad.";
     if (!postalCode) fieldErrors.postalCode = "Ingresá el código postal.";
@@ -59,9 +80,6 @@ export async function POST(req: Request) {
     }
 
     const documentKey = tipoDocumento === "DNI" ? dni : `${tipoDocumento.toLowerCase()}-${dni}`;
-    const email = tipoDocumento === "DNI"
-      ? `dni-${dni}@pacientes.local`
-      : `documento-${documentKey}@pacientes.local`;
     const username = tipoDocumento === "DNI"
       ? `paciente-${dni}`
       : `paciente-${documentKey}`;
@@ -77,34 +95,31 @@ export async function POST(req: Request) {
       );
     }
 
-    const user = await db.user.create({
-      data: {
+    const existingPatient = await db.patient.findFirst({ where: { tipoDocumentoCodigo: tipoDocumento, dni } });
+    if (existingPatient) {
+      return NextResponse.json({ message: "Ya existe una cuenta para este documento.", fieldErrors: { numeroDocumento: "Ya existe una cuenta para este documento." } }, { status: 409 });
+    }
+
+    const code = String(randomInt(100000, 1000000));
+    await db.pendingRegistration.upsert({
+      where: { email },
+      update: {
+        tokenHash: createHash("sha256").update(code).digest("hex"),
+        payload: { tipoDocumento, dni, password, name, birthDate, sexoCodigo, phoneNumber, address, city, postalCode, insuranceProviderId, insurancePlanId, membershipNumber, username },
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+      create: {
         email,
-        username,
-        password,
-        role: "PATIENT",
-        name,
+        tokenHash: createHash("sha256").update(code).digest("hex"),
+        payload: { tipoDocumento, dni, password, name, birthDate, sexoCodigo, phoneNumber, address, city, postalCode, insuranceProviderId, insurancePlanId, membershipNumber, username },
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       },
     });
 
-    await db.patient.create({
-      data: {
-        userId: user.id,
-        hisId: null,
-        dni,
-        tipoDocumentoCodigo: tipoDocumento,
-        phoneNumber: phoneNumber || null,
-        address: address || null,
-        city: city || null,
-        postalCode: postalCode || null,
-        insuranceProviderId: insuranceProviderId || null,
-        insurancePlanId: insurancePlanId || null,
-        membershipNumber: membershipNumber || null,
-        onboardingCompleted: true,
-      },
-    });
-
-    return NextResponse.json({ ok: true });
+    console.info(`[RegisterPatient] Verification code sent to ${email}`);
+    const response: { ok: boolean; verificationRequired: boolean; devVerificationCode?: string } = { ok: true, verificationRequired: true };
+    if (process.env.NODE_ENV !== "production") response.devVerificationCode = code;
+    return NextResponse.json(response);
   } catch (error) {
     console.error("[RegisterPatient]", error);
     return NextResponse.json(
