@@ -21,6 +21,7 @@ function BasaBrandMark() {
 export default function PatientSignInPage() {
   const searchParams = useSearchParams();
   const [showBasaIntro, setShowBasaIntro] = useState(searchParams.get("from") === "corporate");
+  const [tipoDocumento, setTipoDocumento] = useState("DNI");
   const [dni, setDni] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -64,6 +65,8 @@ export default function PatientSignInPage() {
 
     try {
       const result = await signIn("paciente-dni", {
+        tipoDocumento,
+        numeroDocumento: dni.trim(),
         dni: dni.trim(),
         password,
         redirect: false
@@ -105,16 +108,32 @@ export default function PatientSignInPage() {
             </div>
 
             <form onSubmit={handleDniLogin} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2">DNI</label>
-                <input
-                  type="text"
-                  placeholder="Ej: 12345678"
-                  value={dni}
-                  onChange={(e) => setDni(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  disabled={loading}
-                />
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(150px,0.8fr)_minmax(0,1.2fr)] md:items-end">
+                <div>
+                  <label className="mb-2 block text-xs font-bold text-slate-700">Tipo de documento</label>
+                  <select
+                    value={tipoDocumento}
+                    onChange={(e) => setTipoDocumento(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    disabled={loading}
+                  >
+                    <option value="DNI">DNI</option>
+                    <option value="PASAPORTE">Pasaporte</option>
+                    <option value="LIBRETA_CIVICA">Libreta Civica</option>
+                    <option value="CEDULA_IDENTIDAD">Cedula Identidad</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-bold text-slate-700">Número de documento</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: 12345678"
+                    value={dni}
+                    onChange={(e) => setDni(tipoDocumento === "DNI" ? e.target.value.replace(/\D/g, "") : e.target.value.toUpperCase())}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    disabled={loading}
+                  />
+                </div>
               </div>
 
               <div>
