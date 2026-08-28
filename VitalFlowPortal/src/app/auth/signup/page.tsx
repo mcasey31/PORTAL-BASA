@@ -33,6 +33,12 @@ const argentinaProvinces: ProvinceOption[] = [
 ];
 
 const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+const documentTypes = [
+  { code: "DNI", name: "DNI" },
+  { code: "PASAPORTE", name: "Pasaporte" },
+  { code: "LIBRETA_CIVICA", name: "Libreta Civica" },
+  { code: "CEDULA_IDENTIDAD", name: "Cedula Identidad" },
+];
 
 function BasaBrandMark() {
   return (
@@ -57,6 +63,7 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [form, setForm] = useState({
+    tipoDocumento: "DNI",
     dni: "",
     firstName: "",
     lastName: "",
@@ -192,6 +199,8 @@ export default function SignUpPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           dni: normalizedDni,
+          numeroDocumento: normalizedDni,
+          tipoDocumento: form.tipoDocumento,
           password,
           name: fullName,
           phoneNumber: `${form.phoneCountryCode} ${form.phoneAreaCode} ${phoneDigits}`,
@@ -234,26 +243,35 @@ export default function SignUpPage() {
           <p className="mt-2 text-sm text-slate-600">Completa los datos de la seccion Cuenta para habilitar tu acceso al portal.</p>
         </div>
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        <form onSubmit={handleSubmit} noValidate className="space-y-6 [&_label]:text-center">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.dni ? "text-red-600" : "text-slate-600"}`}>DNI</label>
-              <input className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.dni ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.dni} onChange={(e) => onChange("dni", e.target.value.replace(/\D/g, "").slice(0, 8))} required />
-              {fieldErrors.dni && <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.dni}</p>}
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-600">Tipo de documento</label>
+              <select className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" value={form.tipoDocumento} onChange={(e) => onChange("tipoDocumento", e.target.value)}>
+                {documentTypes.map((documentType) => <option key={documentType.code} value={documentType.code}>{documentType.name}</option>)}
+              </select>
             </div>
             <div>
-              <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.lastName ? "text-red-600" : "text-slate-600"}`}>Apellido</label>
-              <input className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.lastName ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.lastName} onChange={(e) => onChange("lastName", e.target.value)} required />
-              {fieldErrors.lastName && <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.lastName}</p>}
+              <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.numeroDocumento || fieldErrors.dni ? "text-red-600" : "text-slate-600"}`}>Número de documento</label>
+              <input className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.numeroDocumento || fieldErrors.dni ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.dni} onChange={(e) => onChange("dni", form.tipoDocumento === "DNI" ? e.target.value.replace(/\D/g, "").slice(0, 8) : e.target.value.toUpperCase().slice(0, 20))} required />
+              {(fieldErrors.numeroDocumento || fieldErrors.dni) && <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.numeroDocumento || fieldErrors.dni}</p>}
             </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
+              <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.lastName ? "text-red-600" : "text-slate-600"}`}>Apellido</label>
+              <input className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.lastName ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.lastName} onChange={(e) => onChange("lastName", e.target.value)} required />
+              {fieldErrors.lastName && <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.lastName}</p>}
+            </div>
+            <div>
               <label className={`mb-1 block text-xs font-bold uppercase tracking-wide ${fieldErrors.firstName ? "text-red-600" : "text-slate-600"}`}>Nombre</label>
               <input className={`w-full rounded-xl border px-4 py-3 ${fieldErrors.firstName ? "border-red-500 bg-red-50" : "border-slate-200"}`} value={form.firstName} onChange={(e) => onChange("firstName", e.target.value)} required />
               {fieldErrors.firstName && <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.firstName}</p>}
             </div>
+          </div>
+
+          <div>
             <div>
               <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-600">Segundo nombre</label>
               <input className="w-full rounded-xl border border-slate-200 px-4 py-3" value={form.secondName} onChange={(e) => onChange("secondName", e.target.value)} placeholder="Opcional" />
