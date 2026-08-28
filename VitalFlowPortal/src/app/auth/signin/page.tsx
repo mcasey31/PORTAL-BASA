@@ -123,8 +123,8 @@ export default function PatientSignInPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="rounded-[2rem] border border-indigo-100 bg-indigo-50/40 p-4 text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest text-indigo-700 sm:text-xs">ACCESO EXCLUSIVO A PACIENTES</p>
+            <div className="rounded-[2rem] border border-indigo-100 bg-indigo-50/40 p-4 text-center">
+              <p className="text-[10px] font-black uppercase tracking-widest text-indigo-700 sm:text-xs">ACCESO EXCLUSIVO A PACIENTES DE LA RED</p>
             </div>
 
             <form onSubmit={handleDniLogin} className="space-y-4">
