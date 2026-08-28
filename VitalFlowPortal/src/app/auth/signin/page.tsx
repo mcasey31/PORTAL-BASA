@@ -30,7 +30,7 @@ export default function PatientSignInPage() {
 
   useEffect(() => {
     if (!showBasaIntro) return;
-    const timer = window.setTimeout(() => setShowBasaIntro(false), 2600);
+    const timer = window.setTimeout(() => setShowBasaIntro(false), 3400);
     return () => window.clearTimeout(timer);
   }, [showBasaIntro]);
 
@@ -41,16 +41,28 @@ export default function PatientSignInPage() {
           <div className="absolute -left-24 top-1/3 h-72 w-72 rounded-full bg-white/35 blur-3xl" />
           <div className="absolute -right-24 bottom-1/4 h-96 w-96 rounded-full bg-[#a7e4dc]/60 blur-3xl" />
           <div className="relative flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-700">
-            <div className="mb-9 flex h-32 w-32 items-center justify-center rounded-[2.25rem] bg-white/70 p-5 shadow-[0_24px_70px_rgba(18,92,91,0.16)] ring-1 ring-white/80 animate-pulse">
+            <div className="mb-10 flex w-[min(82vw,30rem)] items-center justify-center rounded-[2rem] bg-white/60 px-7 py-8 shadow-[0_24px_70px_rgba(18,92,91,0.16)] ring-1 ring-white/80">
               <img
                 src="https://redbasa.com.ar/wp-content/uploads/2025/12/logo-redbasa-color-200x60-1.png"
                 alt="RED BASA"
-                className="h-auto w-full object-contain"
+                className="h-auto w-full object-contain animate-[basa-logo-breathe_2.8s_ease-in-out_infinite]"
               />
             </div>
-            <p className="text-5xl font-black tracking-[-0.06em] text-[#0b5554] sm:text-7xl">RED BASA</p>
-            <div className="mt-6 h-px w-20 bg-[#4a9f99]/60" />
-            <p className="mt-6 text-sm font-bold uppercase tracking-[0.22em] text-[#28716e]">Grupo Olmos</p>
+            <div className="flex flex-col items-center gap-2" aria-label="Cargando RED BASA">
+              <div className="flex gap-2">
+                <span className="basa-square basa-square-1" />
+                <span className="basa-square basa-square-1" />
+                <span className="basa-square basa-square-1" />
+              </div>
+              <div className="flex gap-2">
+                <span className="basa-square basa-square-2" />
+                <span className="basa-square basa-square-2" />
+              </div>
+              <div className="flex gap-2">
+                <span className="basa-square basa-square-3" />
+              </div>
+            </div>
+            <p className="mt-8 text-2xl font-black uppercase tracking-[0.16em] text-[#28716e] sm:text-4xl">Grupo Olmos</p>
             <p className="mt-2 text-base font-medium text-[#28716e]">Construyendo un Futuro Mejor</p>
           </div>
         </div>
