@@ -3,6 +3,61 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { getHisFinanciadoresCatalogo, guardarFinanciadorPacienteHis } from "~/server/services/his/vitalflow-adapter";
 
 export const patientRouter = createTRPCRouter({
+  getDependents: protectedProcedure.query(async ({ ctx }) => {
+    const patient = await ctx.db.patient.findUnique({
+      where: { userId: ctx.session.user.id },
+      select: { id: true },
+    });
+    if (!patient) return [];
+    return ctx.db.dependent.findMany({
+      where: { principalPatientId: patient.id },
+      include: { tipoDocumento: true, insurance: true, plan: true },
+      orderBy: { createdAt: "desc" },
+    });
+  }),
+
+  addDependent: protectedProcedure
+    .input(z.object({
+      tipoDocumentoCodigo: z.string().min(1),
+      dni: z.string().min(1).max(30),
+      name: z.string().min(2),
+      birthDate: z.string().min(10),
+      phoneNumber: z.string().optional(),
+      address: z.string().optional(),
+      insuranceProviderId: z.string().optional(),
+      insurancePlanId: z.string().optional(),
+      membershipNumber: z.string().optional(),
+      relationshipDocument: z.string().min(20).max(8_000_000),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const birthDate = new Date(`${input.birthDate}T00:00:00`);
+      if (Number.isNaN(birthDate.getTime())) throw new Error("Ingresá una fecha de nacimiento válida.");
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      if (today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) age -= 1;
+      if (age >= 16) throw new Error("No puede asociar este usuario. Crear una nueva cuenta.");
+      if (birthDate > today) throw new Error("La fecha de nacimiento no puede ser futura.");
+
+      const principal = await ctx.db.patient.findUnique({ where: { userId: ctx.session.user.id }, select: { id: true } });
+      if (!principal) throw new Error("No se encontró la cuenta principal.");
+
+      return ctx.db.dependent.create({
+        data: {
+          principalPatientId: principal.id,
+          tipoDocumentoCodigo: input.tipoDocumentoCodigo,
+          dni: input.dni.trim().toUpperCase(),
+          name: input.name.trim(),
+          birthDate,
+          phoneNumber: input.phoneNumber?.trim() || null,
+          address: input.address?.trim() || null,
+          insuranceProviderId: input.insuranceProviderId || null,
+          insurancePlanId: input.insurancePlanId || null,
+          membershipNumber: input.membershipNumber?.trim() || null,
+          relationshipDocument: input.relationshipDocument,
+        },
+      });
+    }),
+
   getAccessStatus: protectedProcedure.query(async ({ ctx }) => {
     const user = await ctx.db.user.findUnique({
       where: { id: ctx.session.user.id },

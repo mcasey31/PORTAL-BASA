@@ -72,6 +72,7 @@ model Patient {
     favoriteCenters FavoriteCenter[]
     telemedicineCalls TelemedicineCall[]
     telemedicineSurveys TelemedicineSurvey[]
+    dependentsAsPrincipal Dependent[] @relation("PrincipalPatient")
 
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt
@@ -86,8 +87,41 @@ model DocumentType {
     activo     Boolean   @default(true)
     orden      Int       @default(0)
     patients   Patient[]
+    dependents Dependent[]
 
     @@map("tipo_documento")
+}
+
+model Dependent {
+    id                  String   @id @default(cuid())
+    principalPatientId  String
+    tipoDocumentoCodigo String   @default("DNI")
+    dni                 String
+    name                String
+    birthDate           DateTime
+    phoneNumber         String?
+    address             String?
+    insuranceProviderId String?
+    insurancePlanId     String?
+    membershipNumber    String?
+    relationshipDocument String
+    status              DependentStatus @default(PENDING_REVIEW)
+    createdAt           DateTime @default(now())
+    updatedAt           DateTime @updatedAt
+
+    principalPatient Patient @relation("PrincipalPatient", fields: [principalPatientId], references: [id], onDelete: Cascade)
+    tipoDocumento DocumentType @relation(fields: [tipoDocumentoCodigo], references: [codigo])
+    insurance InsuranceProvider? @relation(fields: [insuranceProviderId], references: [id])
+    plan InsurancePlan? @relation(fields: [insurancePlanId], references: [id])
+
+    @@unique([principalPatientId, tipoDocumentoCodigo, dni])
+    @@map("dependents")
+}
+
+enum DependentStatus {
+    PENDING_REVIEW
+    ACTIVE
+    REJECTED
 }
 
 model MedicalCenter {
@@ -130,6 +164,7 @@ model InsuranceProvider {
     logoUrl     String?
     plans       InsurancePlan[]
     patients    Patient[]
+    dependents  Dependent[]
 
     @@map("insurance_providers")
 }
@@ -141,6 +176,7 @@ model InsurancePlan {
     hisPlanId           String?           @unique
     insurance           InsuranceProvider @relation(fields: [insuranceProviderId], references: [id], onDelete: Cascade)
     patients            Patient[]
+    dependents          Dependent[]
 
     @@map("insurance_plans")
 }
@@ -243,6 +279,17 @@ model User {
     sessions      Session[]
     patient       Patient?
     professional  Professional?
+}
+
+model PendingRegistration {
+    id        String   @id @default(cuid())
+    email     String   @unique
+    tokenHash String
+    payload   Json
+    expiresAt DateTime
+    createdAt DateTime @default(now())
+
+    @@map("pending_registrations")
 }
 
 model Professional {
