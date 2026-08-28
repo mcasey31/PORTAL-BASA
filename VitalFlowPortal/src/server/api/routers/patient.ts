@@ -261,7 +261,7 @@ export const patientRouter = createTRPCRouter({
       where: { userId: ctx.session.user.id },
       include: { 
         user: {
-            select: { name: true, email: true, image: true }
+          select: { name: true, email: true, image: true }
         },
         insurance: true, 
         plan: true 
@@ -272,22 +272,23 @@ export const patientRouter = createTRPCRouter({
   // Actualización de datos desde Mi Cuenta
   updateFullProfile: protectedProcedure
     .input(z.object({
-      name: z.string().min(2),
+      email: z.string().email(),
+      image: z.string().max(2_000_000).nullable().optional(),
       phoneNumber: z.string().optional(),
       address: z.string().optional(),
       city: z.string().optional(),
       postalCode: z.string().optional(),
+      gender: z.string().optional(),
       insuranceProviderId: z.string().optional(),
       insurancePlanId: z.string().optional(),
       membershipNumber: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { name, ...patientData } = input;
-      
-      // Actualizar nombre en User
+      const { email, image, ...patientData } = input;
+
       await ctx.db.user.update({
         where: { id: ctx.session.user.id },
-        data: { name }
+        data: { email, ...(image !== undefined ? { image } : {}) }
       });
 
       const patientBefore = await ctx.db.patient.findUnique({

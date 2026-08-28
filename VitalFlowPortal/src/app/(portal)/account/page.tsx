@@ -37,7 +37,13 @@ export default function AccountPage() {
   });
 
   const [formData, setFormData] = useState({
+    email: "",
+    image: null as string | null,
+    tipoDocumentoCodigo: "DNI",
+    dni: "",
+    birthDate: "",
     name: "",
+    gender: "",
     phoneNumber: "",
     address: "",
     city: "",
@@ -54,7 +60,13 @@ export default function AccountPage() {
   useEffect(() => {
     if (profile) {
       setFormData({
+        email: profile.user?.email || "",
+        image: profile.user?.image || null,
+        tipoDocumentoCodigo: profile.tipoDocumentoCodigo || "DNI",
+        dni: profile.dni || "",
+        birthDate: profile.birthDate ? new Date(profile.birthDate).toISOString().slice(0, 10) : "",
         name: profile.user?.name || "",
+        gender: profile.gender || "",
         phoneNumber: profile.phoneNumber || "",
         address: profile.address || "",
         city: profile.city || "",
@@ -70,6 +82,22 @@ export default function AccountPage() {
     e.preventDefault();
     updateProfile.mutate(formData);
     setIsEditing(false);
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Seleccioná una imagen válida.");
+      return;
+    }
+    if (file.size > 1_500_000) {
+      setError("La foto debe pesar menos de 1,5 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setFormData((current) => ({ ...current, image: String(reader.result) }));
+    reader.readAsDataURL(file);
   };
 
   const selectedProvider = insuranceProviders?.find(p => p.id === formData.insuranceProviderId);
@@ -142,28 +170,31 @@ export default function AccountPage() {
             <div className="soft-card p-8 flex flex-col items-center text-center">
                 <div className="relative group">
                     <div className="h-32 w-32 rounded-[2.5rem] bg-slate-900 flex items-center justify-center text-white text-4xl font-black shadow-2xl overflow-hidden ring-8 ring-slate-50 transition-transform group-hover:scale-105 duration-500 italic">
-                        {profile?.user?.image ? (
-                            <img src={profile.user.image} alt="Avatar" className="w-full h-full object-cover" />
+                            {(formData.image || profile?.user?.image) ? (
+                              <img src={formData.image || profile?.user?.image || ""} alt="Avatar" className="w-full h-full object-cover" />
                         ) : (
                             profile?.user?.name?.charAt(0) || "U"
                         )}
                     </div>
                     {isEditing && (
-                        <button className="absolute bottom-0 right-0 p-3 bg-blue-600 text-white rounded-2xl shadow-xl hover:bg-blue-700 transition-all">
+                        <label className="absolute bottom-0 right-0 cursor-pointer rounded-2xl bg-blue-600 p-3 text-white shadow-xl transition-all hover:bg-blue-700">
                             <Camera className="w-4 h-4" />
-                        </button>
+                          <input type="file" accept="image/png,image/jpeg,image/webp" onChange={handlePhotoChange} className="sr-only" />
+                        </label>
                     )}
                 </div>
                 <div className="mt-6">
                     <h3 className="text-xl font-bold text-slate-900">{profile?.user?.name}</h3>
-                    <p className="text-xs font-black text-blue-600 uppercase tracking-widest mt-1">DNI: {profile?.dni || 'No cargado'}</p>
+                  <p className="text-xs font-black text-blue-600 uppercase tracking-widest mt-1">{profile?.tipoDocumentoCodigo || "DNI"}: {profile?.dni || 'No cargado'}</p>
                 </div>
             </div>
 
             <div className="soft-card p-6 space-y-4">
                 <div className="flex items-center gap-3 text-slate-400">
                     <Mail className="w-4 h-4" />
-                    <span className="text-xs font-bold">{profile?.user?.email}</span>
+                    {isEditing ? (
+                      <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full rounded-lg bg-slate-50 p-1 text-xs font-bold focus:ring-1 focus:ring-blue-500" />
+                    ) : <span className="text-xs font-bold">{profile?.user?.email}</span>}
                 </div>
                 <div className="flex items-center gap-3 text-slate-400">
                     <Phone className="w-4 h-4" />
@@ -194,13 +225,36 @@ export default function AccountPage() {
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombre Completo</label>
                         <input 
-                            disabled={!isEditing}
+                      disabled
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData({...formData, name: e.target.value})}
                             className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-sm focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-60"
                         />
                     </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tipo de documento</label>
+                          <input disabled type="text" value={formData.tipoDocumentoCodigo} className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-sm disabled:opacity-60" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Número de documento</label>
+                          <input disabled type="text" value={formData.dni} className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-sm disabled:opacity-60" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha de nacimiento</label>
+                          <input disabled type="date" value={formData.birthDate} className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-sm disabled:opacity-60" />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sexo</label>
+                          {isEditing ? (
+                            <select value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-sm focus:ring-2 focus:ring-blue-500/20">
+                            <option value="">Sin informar</option>
+                            <option value="F">Femenino</option>
+                            <option value="M">Masculino</option>
+                            <option value="X">X / No binario</option>
+                            </select>
+                          ) : <input disabled type="text" value={formData.gender || "Sin informar"} className="w-full p-4 bg-slate-50 rounded-2xl border-none font-bold text-sm disabled:opacity-60" />}
+                        </div>
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dirección</label>
                         <input 
