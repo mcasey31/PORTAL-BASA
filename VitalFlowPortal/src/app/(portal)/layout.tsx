@@ -9,6 +9,7 @@ import {
   HeartPulse
 } from "lucide-react";
 import { Sidebar } from "~/components/layout/Sidebar";
+import { FamilyMemberSelector } from "~/components/layout/FamilyMemberSelector";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { PLATFORM_CONFIG } from "~/config/platform";
@@ -84,6 +85,7 @@ export default function PortalLayout({
               </div>
               
               <div className="flex items-center gap-3 lg:gap-8">
+                  <FamilyMemberSelector />
                   <div className="hidden sm:flex items-center gap-2.5 text-[9px] font-black text-blue-600 bg-blue-50 px-4 py-2 rounded-full border border-blue-100 uppercase tracking-widest shadow-sm">
                      <div className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />
                      Live Sync

@@ -3,6 +3,23 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { getHisFinanciadoresCatalogo, guardarFinanciadorPacienteHis } from "~/server/services/his/vitalflow-adapter";
 
 export const patientRouter = createTRPCRouter({
+  getFamilyMembers: protectedProcedure.query(async ({ ctx }) => {
+    const principal = await ctx.db.patient.findUnique({
+      where: { userId: ctx.session.user.id },
+      select: { id: true, dni: true, tipoDocumentoCodigo: true, user: { select: { name: true } } },
+    });
+    if (!principal) return [];
+    const dependents = await ctx.db.dependent.findMany({
+      where: { principalPatientId: principal.id },
+      select: { id: true, name: true, dni: true, tipoDocumentoCodigo: true, birthDate: true, status: true },
+      orderBy: { createdAt: "asc" },
+    });
+    return [
+      { id: principal.id, memberType: "PRINCIPAL" as const, name: principal.user.name ?? "Titular", dni: principal.dni ?? "", tipoDocumentoCodigo: principal.tipoDocumentoCodigo },
+      ...dependents.map((dependent) => ({ ...dependent, memberType: "DEPENDENT" as const })),
+    ];
+  }),
+
   getDependents: protectedProcedure.query(async ({ ctx }) => {
     const patient = await ctx.db.patient.findUnique({
       where: { userId: ctx.session.user.id },
