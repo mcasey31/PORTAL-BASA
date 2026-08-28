@@ -35,29 +35,38 @@ export async function POST(req: Request) {
     const existingUser = await db.user.findUnique({ where: { email } });
     if (existingUser) return NextResponse.json({ error: "Ya existe una cuenta con ese email." }, { status: 409 });
 
-    const user = await db.user.create({
-      data: { email, username: payload.username, password: payload.password, role: "PATIENT", name: payload.name },
+    const provider = payload.insuranceProviderId
+      ? await db.insuranceProvider.findUnique({ where: { id: payload.insuranceProviderId }, select: { id: true } })
+      : null;
+    const plan = payload.insurancePlanId
+      ? await db.insurancePlan.findFirst({ where: { id: payload.insurancePlanId, insuranceProviderId: provider?.id }, select: { id: true } })
+      : null;
+
+    await db.$transaction(async (transaction) => {
+      const user = await transaction.user.create({
+        data: { email, username: payload.username, password: payload.password, role: "PATIENT", name: payload.name },
+      });
+      await transaction.patient.create({
+        data: {
+          userId: user.id,
+          hisId: null,
+          dni: payload.dni,
+          tipoDocumentoCodigo: payload.tipoDocumento,
+          birthDate: new Date(`${payload.birthDate}T00:00:00`),
+          gender: payload.sexoCodigo,
+          sexoCodigo: payload.sexoCodigo,
+          phoneNumber: payload.phoneNumber || null,
+          address: payload.address || null,
+          city: payload.city || null,
+          postalCode: payload.postalCode || null,
+          insuranceProviderId: provider?.id ?? null,
+          insurancePlanId: plan?.id ?? null,
+          membershipNumber: payload.membershipNumber || null,
+          onboardingCompleted: true,
+        },
+      });
+      await transaction.pendingRegistration.delete({ where: { email } });
     });
-    await db.patient.create({
-      data: {
-        userId: user.id,
-        hisId: null,
-        dni: payload.dni,
-        tipoDocumentoCodigo: payload.tipoDocumento,
-        birthDate: new Date(`${payload.birthDate}T00:00:00`),
-        gender: payload.sexoCodigo,
-        sexoCodigo: payload.sexoCodigo,
-        phoneNumber: payload.phoneNumber || null,
-        address: payload.address || null,
-        city: payload.city || null,
-        postalCode: payload.postalCode || null,
-        insuranceProviderId: payload.insuranceProviderId || null,
-        insurancePlanId: payload.insurancePlanId || null,
-        membershipNumber: payload.membershipNumber || null,
-        onboardingCompleted: true,
-      },
-    });
-    await db.pendingRegistration.delete({ where: { email } });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[VerifyRegistration]", error);
