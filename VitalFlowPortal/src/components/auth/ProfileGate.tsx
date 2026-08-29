@@ -38,6 +38,7 @@ export function ProfileGate({ children }: { children: React.ReactNode }) {
     const isExcludedRoute = 
         safePathname === "/" || 
         safePathname === "/landing" ||
+        safePathname === "/corporate" ||
         safePathname === "/quantum-home" ||
         safePathname.startsWith("/auth") || 
         safePathname.startsWith("/staff") || 

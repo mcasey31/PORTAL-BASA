@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api } from "~/trpc/react";
+import { PrescriptionsContent } from "../prescriptions/page";
 import { 
     Card, 
     CardContent, 
@@ -32,7 +33,17 @@ type MedicalStudy = {
     pacsLink?: string | null;
 };
 
+type DocumentTab = "PRESCRIPTIONS" | "STUDIES" | "ORDERS" | "OTHER";
+
+const documentTabs: { id: DocumentTab; label: string }[] = [
+    { id: "PRESCRIPTIONS", label: "Recetas Médicas" },
+    { id: "STUDIES", label: "Estudios" },
+    { id: "ORDERS", label: "Órdenes Médicas" },
+    { id: "OTHER", label: "Otros Documentos" },
+];
+
 export default function Health360Page() {
+    const [activeTab, setActiveTab] = useState<DocumentTab>("STUDIES");
     const [selectedType, setSelectedType] = useState<'ALL' | 'LAB' | 'IMG'>('ALL');
     const [days, setDays] = useState<number | undefined>(30);
 
@@ -52,12 +63,53 @@ export default function Health360Page() {
     // Limitamos a 5 resultados para no saturar la vista si no hay filtros activos
     const displayStudies: MedicalStudy[] = (studies ?? []).slice(0, 5) as MedicalStudy[];
 
+    const tabs = (
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-5">
+            {documentTabs.map((tab) => (
+                <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                        className={`rounded-full px-5 py-2.5 text-xs font-black uppercase tracking-widest transition-colors ${
+                        activeTab === tab.id
+                            ? "bg-slate-900 text-white"
+                            : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                    }`}
+                >
+                    {tab.label}
+                </button>
+            ))}
+        </div>
+    );
+
+    if (activeTab === "PRESCRIPTIONS") {
+        return <div className="space-y-8">{tabs}<PrescriptionsContent /></div>;
+    }
+
+    if (activeTab === "ORDERS" || activeTab === "OTHER") {
+        const isOrders = activeTab === "ORDERS";
+        return (
+            <div className="space-y-8">
+                {tabs}
+                <div className="py-16 text-center border border-dashed border-slate-200 bg-slate-50">
+                    <FileText className="mx-auto mb-4 h-12 w-12 text-slate-300" />
+                    <h2 className="text-xl font-bold text-slate-900">{isOrders ? "Órdenes Médicas" : "Otros Documentos"}</h2>
+                    <p className="mt-2 text-sm text-slate-500">
+                        {isOrders
+                            ? "Todavía no hay órdenes médicas recibidas desde el HIS."
+                            : "Todavía no hay otros documentos disponibles."}
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-10 animate-in slide-in-from-bottom-2 duration-700">
+            {tabs}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h2 className="text-4xl font-bold tracking-tight text-slate-900">Historia 360</h2>
-                    <p className="text-slate-500 mt-2 font-medium">Historial clínico digital integrado con el HIS institucional.</p>
+                    <h2 className="text-4xl font-bold tracking-tight text-slate-900">Estudios</h2>
+                    <p className="text-slate-500 mt-2 font-medium">Resultados de laboratorio e imágenes integrados con el HIS institucional.</p>
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-2 bg-slate-100/50 p-1.5 rounded-[1.5rem] border border-slate-200/60">

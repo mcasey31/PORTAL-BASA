@@ -14,10 +14,11 @@ import {
     Search,
     AlertCircle,
     CheckCircle2,
-    UserCircle
+    UserCircle,
+    ChevronRight
 } from "lucide-react";
 
-export default function PrescriptionsPage() {
+export function PrescriptionsContent() {
     const [search, setSearch] = useState("");
     
     // Mock de recetas para el prototipo
@@ -45,114 +46,60 @@ export default function PrescriptionsPage() {
     ];
 
     return (
-        <div className="space-y-10 animate-in slide-in-from-bottom-2 duration-700 pb-20">
+        <div className="space-y-7 animate-in slide-in-from-bottom-2 duration-700 pb-12">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h2 className="text-4xl font-black tracking-tight text-slate-950 uppercase italic">Recetas Digitales</h2>
-                    <p className="text-slate-500 mt-2 font-bold text-sm">Gestiona tus prescripciones vigentes con validación institucional.</p>
+                    <h2 className="text-3xl font-black tracking-tight text-slate-950 uppercase italic">Recetas Médicas</h2>
+                    <p className="text-slate-500 mt-1 font-bold text-sm">Gestiona tus prescripciones vigentes con validación institucional.</p>
                 </div>
-                <div className="flex items-center gap-3 bg-white border-2 border-slate-950 rounded-2xl px-5 py-3 shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
-                    <Search className="h-5 w-5 text-slate-400" />
+                <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 transition-colors focus-within:border-slate-900">
+                    <Search className="h-4 w-4 text-slate-400" />
                     <input 
                         type="text" 
                         placeholder="Buscar medicamento o doctor..." 
-                        className="bg-transparent border-none outline-none text-sm text-slate-900 w-64 placeholder:text-slate-300 font-bold"
+                        className="bg-transparent border-none outline-none text-sm text-slate-900 w-56 placeholder:text-slate-300 font-bold"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
             </div>
 
-            <div className="grid gap-8">
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {prescriptions.map((rx) => (
-                    <Card key={rx.id} className={`bg-white border-none shadow-xl shadow-slate-200/50 group relative overflow-hidden rounded-[2.5rem] transition-all hover:-translate-y-1 ${rx.status === 'expired' ? 'opacity-80 grayscale-[0.5]' : ''}`}>
-                        <CardContent className="p-10">
-                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-                                <div className="flex items-start gap-8">
-                                    <div className={`h-20 w-20 rounded-[1.8rem] flex items-center justify-center border-2 ${
+                    <Card key={rx.id} className={`bg-white border border-slate-200 shadow-sm group relative overflow-hidden rounded-2xl transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md ${rx.status === 'expired' ? 'opacity-75 grayscale-[0.35]' : ''}`}>
+                        <CardContent className="p-5">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex min-w-0 items-start gap-4">
+                                    <div className={`h-12 w-12 shrink-0 rounded-xl flex items-center justify-center border ${
                                         rx.status === 'active' 
-                                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-xl shadow-emerald-500/10' 
+                                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
                                             : 'bg-slate-50 text-slate-400 border-slate-100'
                                     }`}>
-                                        <Pill className="h-10 w-10" />
+                                        <Pill className="h-6 w-6" />
                                     </div>
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-4">
-                                            <h3 className="font-black text-3xl text-slate-950 tracking-tighter uppercase">{rx.medication}</h3>
-                                            <Badge className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 ${
-                                                rx.status === 'active' 
-                                                ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/30' 
-                                                : 'bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/30'
-                                            }`}>
-                                                {rx.status === 'active' ? 'Vigente' : 'Vencida'}
-                                            </Badge>
-                                        </div>
-                                        <p className="text-blue-600 font-black text-lg max-w-xl leading-tight">{rx.instructions}</p>
-                                        
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[9px] font-black uppercase text-slate-300 tracking-widest">Prescrito</span>
-                                                <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                                                    <Calendar className="h-4 w-4 text-slate-400" />
-                                                    {rx.date}
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[9px] font-black uppercase text-slate-300 tracking-widest">Vencimiento</span>
-                                                <div className="flex items-center gap-2 text-sm font-black text-slate-950">
-                                                    <AlertCircle className={`h-4 w-4 ${rx.status === 'active' ? 'text-emerald-500' : 'text-rose-500'}`} />
-                                                    {rx.expires}
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[9px] font-black uppercase text-slate-300 tracking-widest">Profesional</span>
-                                                <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                                                    <UserCircle className="h-4 w-4 text-slate-400" />
-                                                    {rx.prescribedBy}
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div className="min-w-0">
+                                        <h3 className="truncate font-black text-lg text-slate-950" title={rx.medication}>{rx.medication}</h3>
+                                        <p className="mt-1 truncate text-sm font-medium text-slate-500">{rx.prescribedBy}</p>
                                     </div>
                                 </div>
-
-                                <div className="flex flex-row lg:flex-col gap-4">
-                                    <button className="flex-1 lg:w-44 flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-slate-900 hover:bg-slate-950 text-white transition-all text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-900/20 active:scale-95">
-                                        <QrCode className="h-5 w-5" />
-                                        Token Farmacia
-                                    </button>
-                                    <button className="flex-1 lg:w-44 flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-900 transition-all text-[10px] font-black uppercase tracking-widest border-2 border-slate-950 shadow-[4px_4px_0px_rgba(0,0,0,1)] active:translate-x-[2px] active:translate-y-[2px]">
-                                        <Download className="h-5 w-5" />
-                                        Descargar PDF
-                                    </button>
-                                </div>
+                                <Badge className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-black ${rx.status === 'active' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                                    {rx.status === 'active' ? 'Vigente' : 'Consumida'}
+                                </Badge>
                             </div>
-                            
-                            <div className="mt-8 pt-8 border-t border-slate-100 flex items-center gap-3 text-[11px] font-bold text-slate-400 italic">
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                                <span>{rx.pharmacyNotes}</span>
+                            <p className="mt-5 line-clamp-2 text-sm font-semibold leading-5 text-slate-700">{rx.instructions}</p>
+
+                            <div className="mt-5 border-t border-slate-100 pt-4">
+                                <div className="flex items-center justify-between gap-3 text-sm font-bold text-slate-600">
+                                    <span className="flex min-w-0 items-center gap-2 truncate"><Calendar className="h-4 w-4 shrink-0 text-slate-400" />Disponible a partir de {rx.date}</span>
+                                    <ChevronRight className="h-5 w-5 shrink-0 text-slate-500" />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 ))}
             </div>
-
-            <div className="p-10 rounded-[3rem] bg-slate-950 text-white relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                    <div className="flex items-center gap-6 text-center md:text-left">
-                        <div className="h-16 w-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-                            <AlertCircle className="h-8 w-8 text-blue-400" />
-                        </div>
-                        <div>
-                            <h4 className="font-black text-2xl uppercase italic tracking-tighter">¿Necesitas renovar una receta?</h4>
-                            <p className="text-slate-400 font-medium">Solicita una teleconsulta inmediata con tu médico de cabecera.</p>
-                        </div>
-                    </div>
-                    <button className="w-full md:w-auto px-10 py-5 bg-white text-slate-950 rounded-full text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all shadow-2xl shadow-white/10 active:scale-95">
-                        Solicitar Renovación
-                    </button>
-                </div>
-            </div>
         </div>
     );
 }
+
+export default PrescriptionsContent;

@@ -15,7 +15,10 @@ export function middleware(req: NextRequest) {
     hostname.includes("vitalflow");
 
   if (isCorporateDomain) {
-    // VitalFlow vive en el / real.
+    if (url.pathname === "/") {
+      return NextResponse.rewrite(new URL("/corporate", req.url));
+    }
+
     return NextResponse.next();
   }
 

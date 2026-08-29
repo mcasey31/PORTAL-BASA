@@ -13,13 +13,13 @@ const config = {
   
   // Reduce compilation overhead
   experimental: {
-    optimizePackageImports: ["@lucide-react", "date-fns"],
+    optimizePackageImports: ["lucide-react", "date-fns"],
   },
   
   // Better caching headers
   onDemandEntries: {
-    maxInactiveAge: 60 * 1000, // Keep pages in memory for 60s
-    pagesBufferLength: 10,
+    maxInactiveAge: 60 * 60 * 1000, // Keep compiled routes warm for one hour in development.
+    pagesBufferLength: 50,
   },
 };
 

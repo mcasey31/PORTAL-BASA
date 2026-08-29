@@ -8,7 +8,6 @@ import {
   LogOut,
   ChevronRight,
   LayoutDashboard,
-  Pill,
   Zap,
   Video,
   X
@@ -24,9 +23,8 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
 
   const menuItems = [
     { icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard", href: "/dashboard" },
-    { icon: <FileText className="h-4 w-4" />, label: "Historia 360", href: "/health" },
+    { icon: <FileText className="h-4 w-4" />, label: "Mis Documentos Médicos", href: "/health" },
     { icon: <Calendar className="h-4 w-4" />, label: "Mis Turnos", href: "/appointments" },
-    { icon: <Pill className="h-4 w-4" />, label: "Recetas", href: "/prescriptions" },
     { icon: <Video className="h-4 w-4" />, label: "Telemedicina", href: "/telemedicine" },
     { icon: <Zap className="h-4 w-4" />, label: "Guardia Connect", href: "/guardia" },
     { icon: <UserCircle className="h-4 w-4" />, label: "Mi Cuenta", href: "/account" },
