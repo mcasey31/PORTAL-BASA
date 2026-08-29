@@ -16,7 +16,7 @@ export interface UniversalFacility {
     address?: string;
 }
 
-export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'checked-in' | 'completed';
+export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'checked-in' | 'completed' | 'no-show';
 
 export interface UniversalAppointment {
     id: string;

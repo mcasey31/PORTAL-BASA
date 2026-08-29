@@ -3,14 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { api } from "~/trpc/react";
-import { 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableHead, 
-    TableHeader, 
-    TableRow 
-} from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
 import { 
     Calendar, 
@@ -20,9 +12,12 @@ import {
     Loader2,
     CalendarPlus,
     Video,
-    X
+    X,
+    CircleCheck,
+    CircleX,
+    UserX
 } from "lucide-react";
-import { format, differenceInMinutes, isBefore, isAfter, addMinutes } from "date-fns";
+  import { format, differenceInMinutes } from "date-fns";
 import { es } from "date-fns/locale";
 import { NewAppointmentFlow } from "./_components/NewAppointmentFlow";
 
@@ -110,161 +105,38 @@ export default function AppointmentsPage() {
                 </button>
             </div>
 
-            {!appointments || (appointments.future?.length === 0 && appointments.past?.length === 0) ? (
-              <div className="p-12 text-center bg-slate-50/50 border border-slate-200 rounded-3xl">
-                <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-600 font-bold mb-4">No tienes turnos reservados</p>
-                <button 
-                  onClick={() => setIsRequestModalOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl text-sm font-black uppercase transition-all"
-                >
-                  Solicitar tu primer turno
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-10">
-                {/* PRÓXIMOS TURNOS */}
-                {appointments.future && appointments.future.length > 0 && (
-                  <div>
-                    <h3 className="text-xl font-black text-slate-950 mb-4 uppercase">📅 Próximos Turnos</h3>
-                    <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50">
-                      <Table>
-                        <TableHeader className="bg-slate-50/50">
-                          <TableRow className="border-slate-100 hover:bg-transparent">
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 py-5 pl-8">Fecha y Hora</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tipo / Especialidad</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Profesional</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Centro / Consultorio</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 pr-8 text-right">Estado</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {appointments.future.map((apt) => {
-                            const aptDate = new Date(apt.start);
-                            const minutesDiff = differenceInMinutes(aptDate, currentTime);
-                            const canJoin = minutesDiff <= 15 && minutesDiff >= -30;
-
-                            return (
-                              <TableRow key={apt.id} className="border-slate-50 hover:bg-blue-50/30 transition-colors">
-                                <TableCell className="py-6 pl-8">
-                                  <div className="flex flex-col">
-                                    <span className="font-bold text-slate-900">
-                                      {format(aptDate, "d 'de' MMMM", { locale: es })}
-                                    </span>
-                                    <span className="text-xs text-slate-400 flex items-center gap-1 mt-1 font-medium">
-                                      <Clock className="h-3 w-3" />
-                                      {format(aptDate, "hh:mm aa")}
-                                    </span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-sm font-bold text-slate-700">{apt.professional.specialty}</span>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-3">
-                                    <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden">
-                                      <img src={`https://i.pravatar.cc/100?u=${apt.id}`} alt="doc" />
-                                    </div>
-                                    <span className="text-sm font-bold text-slate-700">{apt.professional.name}</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
-                                    <MapPin className="h-3.5 w-3.5 text-blue-500/40" />
-                                    <span>{apt.facility.name}</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="pr-8 text-right">
-                                  <div className="flex items-center justify-end gap-2">
-                                    {canJoin ? (
-                                      <Link 
-                                        href="/telemedicine"
-                                        className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 animate-bounce"
-                                      >
-                                        <Video className="w-3 h-3" /> Ingresar
-                                      </Link>
-                                    ) : (
-                                      <Badge className="bg-green-50 text-green-700 border border-green-200 rounded-md px-3 py-1 text-[9px] font-black uppercase tracking-tighter shadow-none">
-                                        ✓ Confirmado
-                                      </Badge>
-                                    )}
-                                    <button
-                                      onClick={() => setCancelConfirmId(apt.id)}
-                                      className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider text-red-600 hover:bg-red-50 transition-all"
-                                      title="Cancelar turno"
-                                    >
-                                      <X className="w-3.5 h-3.5" /> Cancelar
-                                    </button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
+            <div className="space-y-10">
+              <section>
+                <div className="mb-4 flex items-center justify-between">
+                  <div><h3 className="text-xl font-black uppercase text-slate-950">Próximos turnos</h3><p className="mt-1 text-sm text-slate-500">Gestioná tus citas próximas.</p></div>
+                  <Badge className="bg-slate-900 text-white">{appointments?.future?.length ?? 0}</Badge>
+                </div>
+                {appointments?.future?.length ? (
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {appointments.future.map((apt) => {
+                      const aptDate = new Date(apt.start);
+                      const minutesDiff = differenceInMinutes(aptDate, currentTime);
+                      const canJoin = minutesDiff <= 15 && minutesDiff >= -30;
+                      return <article key={apt.id} className="border border-slate-200 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-3"><div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center bg-blue-50 text-blue-600"><Calendar className="h-5 w-5" /></div><div><p className="font-black text-slate-950">{format(aptDate, "d 'de' MMMM", { locale: es })}</p><p className="text-sm text-slate-500">{format(aptDate, "HH:mm")} hs</p></div></div><Badge className="bg-emerald-50 text-emerald-700">Confirmado</Badge></div>
+                        <div className="mt-5 border-y border-slate-100 py-4"><p className="font-bold text-slate-900">{apt.professional.specialty}</p><p className="mt-1 flex items-center gap-2 text-sm text-slate-600"><User className="h-4 w-4 text-slate-400" />{apt.professional.name}</p><p className="mt-2 flex items-center gap-2 text-sm text-slate-500"><MapPin className="h-4 w-4 text-slate-400" />{apt.facility.name}</p></div>
+                        <div className="mt-4 flex gap-2">{canJoin && <Link href="/telemedicine" className="flex flex-1 items-center justify-center gap-2 bg-slate-900 py-2.5 text-xs font-black uppercase tracking-wider text-white"><Video className="h-4 w-4" />Ingresar</Link>}<button onClick={() => setCancelConfirmId(apt.id)} className="flex flex-1 items-center justify-center gap-2 border border-red-200 py-2.5 text-xs font-black uppercase tracking-wider text-red-600 hover:bg-red-50"><X className="h-4 w-4" />Cancelar</button></div>
+                      </article>;
+                    })}
                   </div>
-                )}
+                ) : <div className="border border-dashed border-slate-200 bg-slate-50 px-6 py-12 text-center"><Calendar className="mx-auto mb-3 h-10 w-10 text-slate-300" /><p className="font-bold text-slate-600">No tenés turnos próximos.</p><button onClick={() => setIsRequestModalOpen(true)} className="mt-4 bg-slate-900 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white">Solicitar turno</button></div>}
+              </section>
 
-                {/* HISTORIAL */}
-                {appointments.past && appointments.past.length > 0 && (
-                  <div>
-                    <h3 className="text-xl font-black text-slate-950 mb-4 uppercase">📋 Historial de Turnos</h3>
-                    <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50">
-                      <Table>
-                        <TableHeader className="bg-slate-50/50">
-                          <TableRow className="border-slate-100 hover:bg-transparent">
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 py-5 pl-8">Fecha y Hora</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tipo / Especialidad</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Profesional</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Centro / Consultorio</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 pr-8 text-right">Estado</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {appointments.past.map((apt) => {
-                            const aptDate = new Date(apt.start);
-                            return (
-                              <TableRow key={apt.id} className="border-slate-50 hover:bg-slate-50/30 transition-colors opacity-75">
-                                <TableCell className="py-6 pl-8">
-                                  <div className="flex flex-col">
-                                    <span className="font-bold text-slate-700">
-                                      {format(aptDate, "d 'de' MMMM", { locale: es })}
-                                    </span>
-                                    <span className="text-xs text-slate-400 flex items-center gap-1 mt-1 font-medium">
-                                      <Clock className="h-3 w-3" />
-                                      {format(aptDate, "hh:mm aa")}
-                                    </span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-sm font-bold text-slate-700">{apt.professional.specialty}</span>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-sm text-slate-700">{apt.professional.name}</span>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-xs text-slate-500">{apt.facility.name}</span>
-                                </TableCell>
-                                <TableCell className="pr-8 text-right">
-                                  <Badge className={`
-                                    ${apt.status === 'completed' ? 'bg-slate-50 text-slate-600 border-slate-200' : ''}
-                                    ${apt.status === 'cancelled' ? 'bg-red-50 text-red-600 border-red-200' : ''}
-                                    rounded-md px-3 py-1 text-[9px] font-black uppercase tracking-tighter border shadow-none
-                                  `}>
-                                    {apt.status === 'completed' ? '✓ Completado' : apt.status}
-                                  </Badge>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+              <section>
+                <div className="mb-4"><h3 className="text-xl font-black uppercase text-slate-950">Historial de turnos</h3><p className="mt-1 text-sm text-slate-500">Turnos consumidos, anulados y no tomados.</p></div>
+                {appointments?.past?.length ? <div className="divide-y border border-slate-200 bg-white">{appointments.past.map((apt) => {
+                  const aptDate = new Date(apt.start);
+                  const status = apt.status === "completed" ? { label: "Consumido", className: "bg-emerald-50 text-emerald-700", icon: CircleCheck } : apt.status === "cancelled" ? { label: "Anulado", className: "bg-red-50 text-red-700", icon: CircleX } : { label: "No tomado", className: "bg-amber-50 text-amber-700", icon: UserX };
+                  const StatusIcon = status.icon;
+                  return <div key={apt.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="font-bold text-slate-900">{apt.professional.specialty}</p><p className="mt-1 truncate text-sm text-slate-600">{apt.professional.name} · {apt.facility.name}</p></div><div className="flex items-center gap-4 sm:justify-end"><p className="text-sm font-medium text-slate-500">{format(aptDate, "d MMM yyyy, HH:mm", { locale: es })}</p><Badge className={`flex items-center gap-1.5 ${status.className}`}><StatusIcon className="h-3.5 w-3.5" />{status.label}</Badge></div></div>;
+                })}</div> : <div className="border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center"><Clock className="mx-auto mb-3 h-9 w-9 text-slate-300" /><p className="font-bold text-slate-600">Todavía no hay turnos en tu historial.</p></div>}
+              </section>
+            </div>
             
             <div className="p-6 rounded-2xl bg-blue-50/50 border border-blue-100 flex items-start gap-4">
                 <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/20">

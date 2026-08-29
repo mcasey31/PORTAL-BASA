@@ -294,6 +294,7 @@ function mapTurnoEstadoToAppointmentStatus(estado: string): AppointmentStatus {
   if (normalized === "ANULADO") return "cancelled";
   if (normalized.includes("CANCELADO")) return "cancelled";
   if (normalized === "CONSUMIDO") return "completed";
+  if (normalized === "NO_TOMADO" || normalized === "NO PRESENTADO" || normalized === "AUSENTE") return "no-show";
   return "pending";
 }
 
