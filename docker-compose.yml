@@ -159,7 +159,10 @@ services:
         npm install --ignore-scripts --no-audit --no-fund --loglevel=error && npx prisma generate;
       fi;
       npx prisma db push --skip-generate;
-      npm run dev -- -H 0.0.0.0 -p 3000
+      npm run dev -- -H 0.0.0.0 -p 3000 &
+      until wget -q -O /dev/null 'http://127.0.0.1:3000/auth/signin?from=corporate'; do sleep 1; done;
+      wget -q -O /dev/null http://127.0.0.1:3000/api/health;
+      wait
       "
     networks:
       - vitalflow_network
