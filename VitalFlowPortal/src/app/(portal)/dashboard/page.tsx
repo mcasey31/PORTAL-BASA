@@ -2,66 +2,30 @@
 
 import { 
   Calendar, 
-  ClipboardList, 
-  Activity, 
-  Clock, 
   MessageSquare, 
   Bell, 
-  Stethoscope,
-  ChevronRight,
-  Search,
-  MapPin,
-  Phone,
-  Navigation,
   ArrowRight,
-  Plus,
-  Video
+  Video,
+  FileText,
+  Loader2,
+  Pill,
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 import { useSession } from "next-auth/react";
 import { PLATFORM_CONFIG } from "~/config/platform";
-
-const BASA_CENTERS = [
-  {
-    id: "centro-gallego",
-    name: "Centro Gallego",
-    type: "CABA",
-    address: "Av. Belgrano 2199, CABA",
-    phone: "0810 122-2424",
-    image: "/images/CENTROS PICS/centro-gallego.png",
-    link: "https://centrogallego.ar/",
-    guardTime: "15 min",
-    status: "normal",
-  },
-  {
-    id: "sanatorio-san-jose",
-    name: "Sanatorio San José",
-    type: "CABA",
-    address: "Sánchez de Bustamante 1674",
-    phone: "0810 122-2424",
-    image: "/images/CENTROS PICS/sanatorio-san-jose.png",
-    link: "https://redbasa.com.ar/sanatorio-san-jose/",
-    guardTime: "20 min",
-    status: "busy",
-  },
-  {
-    id: "policlinico-avellaneda",
-    name: "Policlínico Avellaneda",
-    type: "Buenos Aires",
-    address: "Av. Pres. Hipólito Yrigoyen 670, Avellaneda",
-    phone: "0810 122-2424",
-    image: "/images/CENTROS PICS/avellaneda.png",
-    link: "https://redbasa.com.ar/policlinico-regional-avellaneda/",
-    guardTime: "25 min",
-    status: "normal",
-  },
-];
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import type { ReactNode } from "react";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const { data: patient } = api.patient.getOnboardingStatus.useQuery();
-  const { data: frequentCenters } = api.patient.getFrequentCenters.useQuery();
+  const { data: appointments, isLoading: isLoadingAppointments } = api.health.getAppointments.useQuery();
+  const { data: studies, isLoading: isLoadingStudies } = api.health.getMedicalHistory.useQuery();
+  const pendingAppointments = appointments?.future
+    .filter((appointment) => appointment.status === "pending")
+    .sort((first, second) => new Date(first.start).getTime() - new Date(second.start).getTime())
+    .slice(0, 2) ?? [];
   
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-12">
@@ -90,40 +54,41 @@ export default function DashboardPage() {
       {/* Banner de Bienvenida (Opcional: puedes agregar avisos generales aquí) */}
 
 
-      {/* Sección: MIS CENTROS FRECUENTES (Personalización por Paciente) */}
+      {/* Resumen clínico integrado */}
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div className="flex items-center gap-3">
-             <MapPin className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
-             <h2 className="text-lg md:text-2xl font-bold text-slate-900 tracking-tight uppercase">Mis Centros Frecuentes</h2>
+             <Calendar className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+             <h2 className="text-lg md:text-2xl font-bold text-slate-900 tracking-tight uppercase">Mi información de salud</h2>
           </div>
-          <a
-            href="https://redbasa.com.ar/centros-de-salud/"
-            target="_blank"
-            rel="noreferrer"
-            className="text-[10px] font-black text-slate-400 hover:text-slate-900 tracking-[0.2em] transition-colors"
-          >
-            VER TODAS LAS SEDES
-          </a>
+          <Link href="/appointments" className="text-[10px] font-black text-slate-400 hover:text-slate-900 tracking-[0.2em] transition-colors">VER TODOS LOS TURNOS</Link>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {frequentCenters && frequentCenters.length > 0 ? (
-            frequentCenters.map((center) => (
-              <CenterDashboardCard key={center.id} center={center} isFrequent={true} />
-            ))
-          ) : (
-            BASA_CENTERS.map((center) => (
-              <CenterDashboardCard key={center.id} center={center} isFrequent={true} />
-            ))
-          )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <DashboardSummaryCard icon={<Calendar className="h-5 w-5" />} title="Próximos turnos" isLoading={isLoadingAppointments} actionHref="/appointments" actionLabel="Ir a mis turnos">
+            {pendingAppointments.length > 0 ? (
+              <div className="space-y-3">
+                {pendingAppointments.map((appointment) => (
+                  <div key={appointment.id} className="border-l-2 border-blue-500 pl-3">
+                    <p className="text-sm font-bold text-slate-800">{appointment.professional.specialty}</p>
+                    <p className="text-xs text-slate-500">{format(new Date(appointment.start), "EEEE d 'de' MMMM, HH:mm", { locale: es })}</p>
+                    <p className="text-xs text-slate-400 truncate">{appointment.professional.name} · {appointment.facility.name}</p>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="text-sm text-slate-500">No tenés turnos pendientes próximos.</p>}
+          </DashboardSummaryCard>
+
+          <DashboardSummaryCard icon={<Pill className="h-5 w-5" />} title="Recetas vigentes" isLoading={false} actionHref="/prescriptions" actionLabel="Ir a recetas">
+            <p className="text-sm text-slate-500">Las recetas vigentes estarán disponibles cuando finalice la integración.</p>
+          </DashboardSummaryCard>
+
+          <DashboardSummaryCard icon={<FileText className="h-5 w-5" />} title="Órdenes médicas" isLoading={isLoadingStudies} actionHref="/health" actionLabel="Ir a estudios médicos">
+            <p className="text-sm text-slate-500">
+              {studies && studies.length > 0 ? `${studies.length} estudio${studies.length === 1 ? "" : "s"} disponible${studies.length === 1 ? "" : "s"}.` : "No hay órdenes o estudios disponibles."}
+            </p>
+          </DashboardSummaryCard>
         </div>
-        
-        {(!frequentCenters || frequentCenters.length === 0) && (
-          <p className="text-center text-slate-400 text-xs font-medium italic pt-4">
-            Aún no tienes centros frecuentes. Se muestran las sedes principales por cercanía.
-          </p>
-        )}
       </div>
 
       {/* Sección: Centro de Notificaciones y Mensajes */}
@@ -182,48 +147,38 @@ export default function DashboardPage() {
   );
 }
 
-function CenterDashboardCard({ center, isFrequent }: { center: any, isFrequent: boolean }) {
+function DashboardSummaryCard({
+  icon,
+  title,
+  isLoading,
+  actionHref,
+  actionLabel,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  isLoading: boolean;
+  actionHref: string;
+  actionLabel: string;
+  children: ReactNode;
+}) {
   return (
-    <div className="soft-card overflow-hidden group flex flex-col relative rounded-[28px] border border-slate-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-       {isFrequent && (
-         <div className="absolute top-4 right-4 z-20">
-            <div className="bg-blue-600 text-white text-[10px] sm:text-[11px] font-black px-4 py-2 rounded-full uppercase tracking-[0.15em] shadow-lg flex items-center gap-2">
-               <Plus className="w-3 h-3" />
-               Frecuente
-            </div>
-         </div>
-       )}
-       <div className="h-56 overflow-hidden relative">
-          <img 
-            src={center.image || '/images/sede-placeholder.png'} 
-            alt={center.name} 
-            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
-          <div className="absolute top-4 left-4">
-             <span className="bg-white/85 backdrop-blur text-slate-900 text-[11px] font-black px-3 py-2 rounded-xl uppercase tracking-[0.12em] shadow-sm">
-                {center.type}
-             </span>
+    <div className="soft-card min-h-60 p-6 flex flex-col">
+      <div className="flex items-center gap-3 mb-5 text-blue-600">
+        <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center">{icon}</div>
+        <h3 className="text-base font-bold text-slate-900">{title}</h3>
+      </div>
+      <div className="flex-1">
+        {isLoading ? (
+          <div className="h-24 flex items-center gap-3 text-sm text-slate-400">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+            Consultando información...
           </div>
-          <div className="absolute bottom-5 right-5 group-hover:translate-x-1 transition-transform">
-             <a
-               href={center.link}
-               target="_blank"
-               rel="noreferrer"
-               className="bg-[#111827] text-white p-3 rounded-full shadow-xl inline-flex border border-white/20"
-               aria-label={`Abrir ${center.name}`}
-             >
-                <Navigation className="w-4 h-4" />
-             </a>
-          </div>
-       </div>
-       <div className="px-5 pb-5 pt-4 flex-1 flex flex-col bg-white">
-          <h4 className="text-[2.1rem] md:text-[2.3rem] font-black leading-none tracking-[-0.06em] text-slate-900 mb-3">{center.name}</h4>
-          <div className="flex items-center text-slate-600 text-[1rem] md:text-[1.15rem] font-medium gap-2">
-             <MapPin className="w-4 h-4 text-slate-500" />
-             <span>{center.address}</span>
-          </div>
-       </div>
+        ) : children}
+      </div>
+      <Link href={actionHref} className="mt-5 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-700 hover:text-blue-600 transition-colors">
+        {actionLabel} <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
     </div>
   );
 }
