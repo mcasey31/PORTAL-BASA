@@ -46,7 +46,7 @@ export default async function AdminLayout({
             <Users className="w-4 h-4" /> Staff Médico
           </Link>
           <Link href="/admin/autorizaciones" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors">
-            <ClipboardCheck className="w-4 h-4" /> Cuentas / Integrantes
+            <ClipboardCheck className="w-4 h-4" /> Cuentas/Integrantes Portal BASA
           </Link>
           {role === "ADMIN" && <Link href="/admin/usuarios" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors">
             <UserCog className="w-4 h-4" /> Usuarios Backoffice

@@ -70,6 +70,36 @@ export const staffRouter = createTRPCRouter({
       });
     }),
 
+  getDependentReviewReport: staffAuthorizationProcedure
+    .input(z.object({ search: z.string().trim().max(100).optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const search = input?.search?.trim();
+      return ctx.db.dependent.findMany({
+        where: {
+          status: { in: ["ACTIVE", "REJECTED"] },
+          ...(search ? {
+            OR: [
+              { dni: { contains: search, mode: "insensitive" } },
+              { name: { contains: search, mode: "insensitive" } },
+              { principalPatient: { dni: { contains: search, mode: "insensitive" } } },
+              { principalPatient: { user: { name: { contains: search, mode: "insensitive" } } } },
+            ],
+          } : {}),
+        },
+        select: {
+          id: true,
+          name: true,
+          dni: true,
+          tipoDocumentoCodigo: true,
+          status: true,
+          updatedAt: true,
+          principalPatient: { select: { dni: true, user: { select: { name: true } } } },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 100,
+      });
+    }),
+
   validateDependent: staffAuthorizationProcedure
     .input(z.object({ dependentId: z.string().min(1), status: z.enum(["ACTIVE", "REJECTED"]) }))
     .mutation(async ({ ctx, input }) => {

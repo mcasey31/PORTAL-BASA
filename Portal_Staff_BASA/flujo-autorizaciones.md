@@ -3,8 +3,8 @@
 ## Cuentas / Integrantes
 
 - Buscar por DNI de titular o integrante, o por nombre.
-- Ver titular, integrantes asociados y estado de validacion.
-- Un integrante pendiente permite abrir su documento y decidir Validar o Rechazar.
+- Muestra solo titulares e integrantes con documentación `PENDING_REVIEW`.
+- Es una bandeja de consulta: no permite abrir, validar ni rechazar documentos.
 
 ## Documentación
 
@@ -12,6 +12,7 @@
 - Identifica titular, DNI, integrante y documento para revisar.
 - Validar cambia el estado a `ACTIVE`.
 - Rechazar cambia el estado a `REJECTED`.
+- Incluye un reporte buscable por titular o integrante de documentos `ACTIVE` y `REJECTED`.
 
 ## Pendiente de evolucion
 

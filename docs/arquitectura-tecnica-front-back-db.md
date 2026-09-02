@@ -142,5 +142,8 @@ Iniciar con AGENDA respetando esta secuencia:
 - El Portal del Paciente y Portal Staff BASA comparten la base `basa_portal`; no se duplican cuentas ni documentos.
 - Cuando un titular asocia un integrante, el Portal persiste `Dependent.relationshipDocument` y el estado inicial `PENDING_REVIEW`.
 - El backoffice consume esta informacion exclusivamente mediante procedimientos tRPC protegidos para roles `ADMIN` o `STAFF`.
+- El handler tRPC resuelve la sesión desde los headers de cada request HTTP antes de ejecutar procedimientos protegidos; las consultas administrativas no reutilizan una sesión anónima en cache.
 - El staff puede consultar titular e integrantes por DNI, visualizar el documento asociado y cambiar el estado a `ACTIVE` o `REJECTED`.
+- La bandeja Cuentas/Integrantes muestra solo registros `PENDING_REVIEW` y no permite resolverlos; la resolucion se realiza exclusivamente desde Documentación.
+- El reporte de Documentación consulta en modo lectura los integrantes `ACTIVE` y `REJECTED`, junto con su titular en `patients` y su cuenta en `User`; no crea tablas ni agrega campos a `basa_portal`.
 - Los documentos clinicos o de parentesco no se exponen por APIs publicas, no se cachean en el navegador y requieren sesion autenticada.
