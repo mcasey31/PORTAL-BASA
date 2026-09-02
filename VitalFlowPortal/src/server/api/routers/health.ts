@@ -8,7 +8,7 @@ async function getHisPatientIdForContext(userId: string, headers: Headers): Prom
   const selectedMemberId = cookieHeader.match(/(?:^|;\s*)portal_member_id=([^;]+)/)?.[1];
   const principal = await db.patient.findUnique({ where: { userId }, select: { id: true, hisId: true } });
   const patient = selectedMemberId && selectedMemberId !== principal?.id
-    ? await db.dependent.findFirst({ where: { id: selectedMemberId, principalPatientId: principal?.id }, select: { tipoDocumentoCodigo: true, dni: true } })
+    ? await db.dependent.findFirst({ where: { id: selectedMemberId, principalPatientId: principal?.id, status: "ACTIVE" }, select: { tipoDocumentoCodigo: true, dni: true } })
     : principal;
 
   if (patient && "tipoDocumentoCodigo" in patient) {
@@ -48,7 +48,8 @@ export const healthRouter = createTRPCRouter({
       type: z.enum(['LAB', 'IMG']).optional(),
       days: z.number().optional()
     }).optional())
-    .query(async () => {
+    .query(async ({ ctx }) => {
+      await getHisPatientIdForContext(ctx.session.user.id, ctx.headers);
       // Sin endpoint HIS integrado para estudios en este router.
       // No devolvemos datos mock para evitar resultados falsos.
       return [];

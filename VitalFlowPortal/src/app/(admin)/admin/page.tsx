@@ -13,7 +13,7 @@ export default function AdminDashboardPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tighter">Resumen Operativo</h1>
-        <p className="text-slate-500 font-medium">Estado actual de su institución en la red VitalPlus.</p>
+        <p className="text-slate-500 font-medium">Estado actual de RED BASA.</p>
       </div>
 
       {/* Stats Grid */}
@@ -39,9 +39,8 @@ export default function AdminDashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* News & Config Card */}
-        <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm">
+      <div className="grid grid-cols-1 gap-8">
+        <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-sm">
            <div className="p-8 border-b border-slate-100 flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Control de Novedades en Landing</h3>
@@ -80,41 +79,6 @@ export default function AdminDashboardPage() {
            </div>
         </div>
 
-        {/* Branding Sidebar */}
-        <div className="bg-indigo-900 rounded-[2.5rem] p-8 text-white space-y-8 relative overflow-hidden">
-           <div className="absolute top-0 right-0 -mr-10 -mt-10 h-40 w-40 bg-white/10 rounded-full blur-3xl" />
-           
-           <div>
-              <h3 className="text-xl font-bold mb-2 italic tracking-tight">Marca Blanca</h3>
-              <p className="text-indigo-200 text-sm">Personalice el portal con la identidad de su institución.</p>
-           </div>
-
-           <div className="space-y-6">
-              <div className="space-y-2">
-                 <label className="text-[10px] font-black uppercase tracking-widest text-indigo-300">Logo Institucional</label>
-                 <div className="h-32 w-full bg-indigo-800/50 rounded-2xl border-2 border-dashed border-indigo-500 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-indigo-800 transition-colors">
-                    <Plus className="w-6 h-6 text-indigo-400" />
-                    <span className="text-xs font-bold text-indigo-400">Subir SVG o PNG</span>
-                 </div>
-              </div>
-
-              <div className="space-y-2">
-                 <label className="text-[10px] font-black uppercase tracking-widest text-indigo-300">Color Primario</label>
-                 <div className="flex gap-4">
-                    <div className="h-10 w-10 rounded-full bg-indigo-600 border-2 border-white ring-4 ring-indigo-500/20" />
-                    <div className="h-10 w-10 rounded-full bg-emerald-500 border-2 border-white/20" />
-                    <div className="h-10 w-10 rounded-full bg-rose-500 border-2 border-white/20" />
-                    <div className="h-10 w-10 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center">
-                        <Plus className="w-4 h-4" />
-                    </div>
-                 </div>
-              </div>
-
-              <button className="w-full py-4 bg-white text-indigo-900 font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-indigo-50 transition-all shadow-xl">
-                 Guardar Configuración
-              </button>
-           </div>
-        </div>
       </div>
     </div>
   );

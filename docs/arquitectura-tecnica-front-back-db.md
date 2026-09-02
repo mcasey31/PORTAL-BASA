@@ -137,3 +137,10 @@ Iniciar con AGENDA respetando esta secuencia:
 2. BACK: APIs de gestion de agenda.
 3. FRONT: pantallas de administracion de agenda consumiendo esas APIs.
 4. FHIR: perfiles iniciales de Schedule/Slot y contratos de interoperabilidad externa.
+
+## Portal Staff BASA - Autorizaciones
+- El Portal del Paciente y Portal Staff BASA comparten la base `basa_portal`; no se duplican cuentas ni documentos.
+- Cuando un titular asocia un integrante, el Portal persiste `Dependent.relationshipDocument` y el estado inicial `PENDING_REVIEW`.
+- El backoffice consume esta informacion exclusivamente mediante procedimientos tRPC protegidos para roles `ADMIN` o `STAFF`.
+- El staff puede consultar titular e integrantes por DNI, visualizar el documento asociado y cambiar el estado a `ACTIVE` o `REJECTED`.
+- Los documentos clinicos o de parentesco no se exponen por APIs publicas, no se cachean en el navegador y requieren sesion autenticada.

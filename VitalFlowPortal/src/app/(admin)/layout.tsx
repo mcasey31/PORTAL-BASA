@@ -1,5 +1,7 @@
 import "~/styles/globals.css";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "~/server/auth";
 import { 
   LayoutDashboard, 
   Users, 
@@ -7,14 +9,21 @@ import {
   Bell, 
   LogOut, 
   Building2,
-  PieChart
+  ClipboardCheck,
+  UserCog,
 } from "lucide-react";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (role !== "ADMIN" && role !== "STAFF") {
+    redirect("/staff/login?callbackUrl=/admin/autorizaciones");
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar Corporativo */}
@@ -22,7 +31,7 @@ export default function AdminLayout({
         <div className="p-6 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <div className="h-6 w-6 bg-indigo-600 rounded-md" />
-            <span className="text-sm font-black tracking-tighter">VITALPLUS<span className="text-indigo-600">ADMIN</span></span>
+            <span className="text-sm font-black tracking-tighter">RED BASA<span className="text-indigo-600"> ADMIN</span></span>
           </div>
         </div>
 
@@ -36,9 +45,12 @@ export default function AdminLayout({
           <Link href="/admin/staff" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors">
             <Users className="w-4 h-4" /> Staff Médico
           </Link>
-          <Link href="/admin/branding" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors">
-            <PieChart className="w-4 h-4" /> Marca Blanca
+          <Link href="/admin/autorizaciones" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors">
+            <ClipboardCheck className="w-4 h-4" /> Cuentas / Integrantes
           </Link>
+          {role === "ADMIN" && <Link href="/admin/usuarios" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors">
+            <UserCog className="w-4 h-4" /> Usuarios Backoffice
+          </Link>}
         </nav>
 
         <div className="p-4 border-t border-slate-100">
@@ -55,7 +67,7 @@ export default function AdminLayout({
       <main className="flex-1 ml-64">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
           <div className="text-xs font-black text-slate-400 uppercase tracking-widest">
-            Bienvenido, Admin Institucional
+            Bienvenido, {session?.user.name ?? "Staff BASA"}
           </div>
           <div className="flex items-center gap-4">
             <button className="p-2 text-slate-400 hover:text-indigo-600 transition-colors">

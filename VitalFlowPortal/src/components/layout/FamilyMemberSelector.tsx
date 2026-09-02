@@ -14,7 +14,10 @@ export function FamilyMemberSelector() {
   useEffect(() => {
     if (!members?.length) return;
     const saved = window.localStorage.getItem(MEMBER_COOKIE);
-    const selected = members.some((member) => member.id === saved) && saved ? saved : members[0]?.id ?? "";
+    const savedMember = members.find((member) => member.id === saved);
+    const selected = savedMember && (savedMember.memberType === "PRINCIPAL" || savedMember.status === "ACTIVE")
+      ? savedMember.id
+      : members[0]?.id ?? "";
     setSelectedId(selected);
     document.cookie = `${MEMBER_COOKIE}=${selected}; path=/; max-age=2592000; samesite=lax`;
     window.localStorage.setItem(MEMBER_COOKIE, selected);
@@ -35,7 +38,15 @@ export function FamilyMemberSelector() {
       <Users className="h-4 w-4 shrink-0 text-[#28716e]" />
       <span className="hidden text-[9px] font-black uppercase tracking-[0.16em] text-slate-400 sm:inline">Integrante</span>
       <select aria-label="Seleccionar integrante" value={selectedId} onChange={(event) => handleChange(event.target.value)} disabled={isLoading || !members?.length} className="min-w-0 max-w-[150px] bg-transparent text-xs font-bold text-slate-800 outline-none sm:max-w-[220px]">
-        {members?.map((member) => <option key={member.id} value={member.id}>{member.memberType === "PRINCIPAL" ? `${member.name} (Titular)` : member.name}</option>)}
+        {members?.map((member) => {
+          const isApprovedDependent = member.memberType === "DEPENDENT" && member.status === "ACTIVE";
+          const isBlockedDependent = member.memberType === "DEPENDENT" && !isApprovedDependent;
+          const label = member.memberType === "PRINCIPAL"
+            ? `${member.name} (Titular)`
+            : `${member.name}${isApprovedDependent ? "" : " (Pendiente de validación)"}`;
+
+          return <option key={member.id} value={member.id} disabled={isBlockedDependent}>{label}</option>;
+        })}
       </select>
     </label>
   );

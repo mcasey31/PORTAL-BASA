@@ -33,7 +33,7 @@ services:
     image: postgres:15-alpine
     container_name: vitalflow_portal_postgres
     environment:
-      POSTGRES_DB: ${PORTAL_POSTGRES_DB:-vitalflow_portal}
+      POSTGRES_DB: ${PORTAL_POSTGRES_DB:-basa_portal}
       POSTGRES_USER: ${PORTAL_POSTGRES_USER:-portal_user}
       POSTGRES_PASSWORD: ${PORTAL_POSTGRES_PASSWORD:-portal_password_change_me}
       PGTZ: ${PGTZ:-America/Argentina/Buenos_Aires}
@@ -44,7 +44,7 @@ services:
     networks:
       - vitalflow_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${PORTAL_POSTGRES_USER:-portal_user} -d ${PORTAL_POSTGRES_DB:-vitalflow_portal}"]
+      test: ["CMD-SHELL", "pg_isready -U ${PORTAL_POSTGRES_USER:-portal_user} -d ${PORTAL_POSTGRES_DB:-basa_portal}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -130,7 +130,7 @@ services:
       HIS_API_USERNAME: ${HIS_API_USERNAME:-admin}
       HIS_API_PASSWORD: ${HIS_API_PASSWORD:-admin}
       HIS_LOGIN_CENTRO_ID: ${HIS_LOGIN_CENTRO_ID:-global}
-      DATABASE_URL: postgresql://${PORTAL_POSTGRES_USER:-portal_user}:${PORTAL_POSTGRES_PASSWORD:-portal_password_change_me}@portal_postgres:5432/${PORTAL_POSTGRES_DB:-vitalflow_portal}
+      DATABASE_URL: postgresql://${PORTAL_POSTGRES_USER:-portal_user}:${PORTAL_POSTGRES_PASSWORD:-portal_password_change_me}@portal_postgres:5432/${PORTAL_POSTGRES_DB:-basa_portal}
       REDIS_URL: redis://:${REDIS_PASSWORD:-redis_secure_password}@redis:6379
       JWT_SECRET: ${JWT_SECRET:-portal-jwt-secret-change-me}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-nextauth-secret-change-me}

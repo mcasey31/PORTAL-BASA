@@ -131,3 +131,18 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+export const staffAuthorizationProcedure = protectedProcedure.use(({ ctx, next }) => {
+  const role = ctx.session.user.role;
+  if (role !== "ADMIN" && role !== "STAFF") {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+  return next();
+});
+
+export const adminAuthorizationProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.session.user.role !== "ADMIN") {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+  return next();
+});

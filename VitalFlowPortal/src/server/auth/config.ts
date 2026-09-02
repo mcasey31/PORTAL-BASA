@@ -163,6 +163,31 @@ export const authConfig = {
             }
         }
     }),
+    CredentialsProvider({
+      id: "staff-credentials",
+      name: "Acceso Staff BASA",
+      credentials: {
+        username: { label: "Usuario", type: "text" },
+        password: { label: "Contraseña", type: "password" },
+      },
+      async authorize(credentials) {
+        const username = String(credentials?.username ?? "").trim();
+        const password = String(credentials?.password ?? "");
+        if (!username || !password) return null;
+
+        const user = await db.user.findUnique({ where: { username } });
+        if (!user || user.password !== password || (user.role !== "ADMIN" && user.role !== "STAFF")) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        };
+      },
+    }),
   ],
   adapter: PrismaAdapter(db),
   pages: {

@@ -19,16 +19,18 @@ export default function StaffLoginPage() {
     setError("");
 
     try {
-      const result = await signIn("credentials", {
+      const result = await signIn("staff-credentials", {
         username,
         password,
         redirect: false,
+        callbackUrl: "/admin/autorizaciones",
       });
 
       if (result?.error) {
         setError("Credenciales de profesional incorrectas");
       } else {
-        router.push("/staff/console");
+        router.replace("/admin/autorizaciones");
+        router.refresh();
       }
     } catch (err) {
       setError("Error de conexión con el portal");
@@ -51,10 +53,10 @@ export default function StaffLoginPage() {
               <Stethoscope className="h-9 w-9 text-white" />
             </div>
             <h1 className="text-2xl font-black text-white tracking-tighter leading-tight uppercase">
-              Bienvenido al Portal de Staff <br/>
-              <span className="text-indigo-400 font-heading italic">Profesional de la Salud</span>
+              BIENVENIDO AL BACKOFFICE<br/>
+              <span className="text-indigo-400 font-heading italic">ADMINISTRACION RED BASA</span>
             </h1>
-            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mt-6">Institución: <span className="text-indigo-400">Quantum</span></p>
+            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mt-6">Institución: <span className="text-indigo-400">RED BASA</span></p>
           </div>
 
           <form onSubmit={handleStaffLogin} className="space-y-6">
@@ -65,7 +67,7 @@ export default function StaffLoginPage() {
             )}
             
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Usuario Profesional</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Usuario Staff</label>
               <div className="relative group">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                 <input 
@@ -102,7 +104,7 @@ export default function StaffLoginPage() {
                 {isLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  "INGRESAR A CONSOLA MÉDICA"
+                  "INGRESAR AL BACKOFFICE"
                 )}
               </button>
           </form>
